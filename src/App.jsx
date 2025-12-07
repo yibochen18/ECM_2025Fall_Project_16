@@ -4,7 +4,7 @@ import JointAngles from './components/JointAngles'
 import AsymmetryMetrics from './components/AsymmetryMetrics'
 import RealTimeFeedback from './components/RealTimeFeedback'
 import FormAnalysis from './components/FormAnalysis'
-import { getMockData, simulateRealTimeData } from './utils/mockData'
+import { getMockData } from './utils/mockData'
 import './App.css'
 
 function App() {
@@ -12,6 +12,7 @@ function App() {
   const [runData, setRunData] = useState(null)
   const [realTimeData, setRealTimeData] = useState(null)
   const [isRealTime, setIsRealTime] = useState(false)
+  const [realTimeSeries, setRealTimeSeries] = useState([])
 
   useEffect(() => {
     // Load initial run data
@@ -20,13 +21,59 @@ function App() {
   }, [])
 
   useEffect(() => {
-    if (isRealTime) {
-      const interval = setInterval(() => {
-        const newData = simulateRealTimeData()
-        setRealTimeData(newData)
-      }, 1000) // Update every second
+    if (!isRealTime) {
+      return
+    }
 
-      return () => clearInterval(interval)
+    const socket = new WebSocket('ws://localhost:4000/joint-angles')
+
+    socket.onopen = () => {
+      console.log('WebSocket connected')
+      // Optionally send a message to start streaming from the backend
+      // socket.send(JSON.stringify({ type: 'START_STREAM' }))
+    }
+
+    socket.onmessage = (event) => {
+      try {
+        const message = JSON.parse(event.data)
+        // Expect backend message to match simulateRealTimeData() shape
+        setRealTimeData(message)
+
+        // Accumulate real-time frames into a timeSeriesData-style array
+        setRealTimeSeries((prev) => {
+          const next = [
+            ...prev,
+            {
+              timestamp: prev.length,
+              jointAngles: message.jointAngles,
+            },
+          ]
+          // Keep a rolling window of the most recent 300 points
+          return next.slice(-300)
+        })
+      } catch (error) {
+        console.error('Failed to parse joint angle message', error)
+      }
+    }
+
+    socket.onerror = (error) => {
+      console.error('WebSocket error', error)
+    }
+
+    socket.onclose = () => {
+      console.log('WebSocket disconnected')
+    }
+
+    return () => {
+      socket.close()
+    }
+  }, [isRealTime])
+
+  useEffect(() => {
+    if (!isRealTime) {
+      // Reset real-time state when switching back to offline mode
+      setRealTimeData(null)
+      setRealTimeSeries([])
     }
   }, [isRealTime])
 
@@ -92,7 +139,14 @@ function App() {
           <Dashboard data={runData} />
         )}
         {currentView === 'joints' && runData && (
-          <JointAngles data={runData} realTimeData={realTimeData} />
+          <JointAngles 
+            data={runData} 
+            realTimeData={
+              realTimeData
+                ? { ...realTimeData, timeSeriesData: realTimeSeries }
+                : null
+            } 
+          />
         )}
         {currentView === 'asymmetry' && runData && (
           <AsymmetryMetrics data={runData} realTimeData={realTimeData} />
