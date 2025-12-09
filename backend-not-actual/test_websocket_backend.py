@@ -2,7 +2,7 @@ import asyncio
 import json
 import random
 from datetime import datetime
-import websockets
+from aiohttp import web
 
 
 def calculate_symmetry(left: float, right: float) -> int:
@@ -138,34 +138,24 @@ def compute_joint_metrics_once() -> dict:
 
     return metrics
 
+async def joint_angles_handler(request):
+    data = await request.json()
+    print("Received message:", data)
 
-async def joint_angles_handler(websocket):
-    # Optional: wait for a START message from client
-    # msg = await websocket.recv()
-    # if json.loads(msg).get("type") != "START_STREAM":
-    #     return
-
-    try:
-        async for message in websocket:
-            print("Received message:", message)
-            
-            await websocket.send(message)
-
-            # # ~10 Hz (adjust as needed)
-            # await asyncio.sleep(0.1)
-    except websockets.ConnectionClosed:
-        print("Client disconnected")
-
+    # Echo back the data
+    return web.json_response(data)
 
 async def main():
-    async with websockets.serve(
-        joint_angles_handler,
-        host="localhost",
-        port=4000,
-    ):
-        print("WebSocket server listening on ws://localhost:4000/joint-angles")
-        await asyncio.Future()  # run forever
+    app = web.Application()
+    app.router.add_post('/joint-angles', joint_angles_handler)
 
+    runner = web.AppRunner(app)
+    await runner.setup()
+    site = web.TCPSite(runner, 'localhost', 4000)
+    await site.start()
+
+    print("HTTP server listening on http://localhost:4000/joint-angles")
+    await asyncio.Future()  # run forever
 
 if __name__ == "__main__":
     asyncio.run(main())
