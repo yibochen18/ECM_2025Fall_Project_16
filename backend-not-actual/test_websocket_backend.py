@@ -146,13 +146,13 @@ async def joint_angles_handler(websocket):
     #     return
 
     try:
-        while True:
-            metrics = compute_joint_metrics_once()
-            message = json.dumps(metrics)
+        async for message in websocket:
+            print("Received message:", message)
+            
             await websocket.send(message)
 
-            # ~10 Hz (adjust as needed)
-            await asyncio.sleep(0.1)
+            # # ~10 Hz (adjust as needed)
+            # await asyncio.sleep(0.1)
     except websockets.ConnectionClosed:
         print("Client disconnected")
 
