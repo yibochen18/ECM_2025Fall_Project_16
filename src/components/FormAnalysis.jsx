@@ -1,12 +1,66 @@
 import React from 'react'
 import './FormAnalysis.css'
 
-function FormAnalysis({ data, realTimeData }) {
-  const displayData = realTimeData || data
+function FormAnalysis({ data, realTimeData, sessionAverages }) {
+  // Use session averages if available, otherwise use regular data
+  const displayData = sessionAverages ? {
+    jointAngles: sessionAverages.jointAngles,
+    formAnalysis: convertSessionAveragesToFormAnalysis(sessionAverages)
+  } : (realTimeData || data)
+  
   const formAnalysis = displayData.formAnalysis
 
   if (!formAnalysis) {
     return <div className="form-analysis">No form analysis data available</div>
+  }
+  
+  // Helper function to convert session averages to form analysis format
+  function convertSessionAveragesToFormAnalysis(avgData) {
+    const jointAngles = avgData.jointAngles
+    
+    const frontKneeAvg = jointAngles.frontKnee.angle
+    const backKneeAvg = jointAngles.backKnee.angle
+    
+    // Calculate symmetry for front/back knees (using left/right knee angles as proxy)
+    const kneeSymmetry = jointAngles.knee.symmetry || 95
+    
+    return {
+      backPosition: {
+        forwardLean: Math.abs(jointAngles.backToHead.angle),
+        symmetry: 90, // Default
+        status: Math.abs(jointAngles.backToHead.angle) < 10 ? 'Good' : 'Warning'
+      },
+      kneeAnglesAtLanding: {
+        frontKnee: {
+          left: frontKneeAvg,
+          right: frontKneeAvg, // Using average for both
+          symmetry: kneeSymmetry
+        },
+        backKnee: {
+          left: backKneeAvg,
+          right: backKneeAvg, // Using average for both
+          symmetry: kneeSymmetry
+        }
+      },
+      armsPosition: {
+        leftAngle: jointAngles.elbow.left,
+        rightAngle: jointAngles.elbow.right,
+        symmetry: jointAngles.elbow.symmetry,
+        swingSymmetry: jointAngles.elbow.symmetry // Using elbow symmetry as proxy
+      },
+      headPosition: {
+        tilt: jointAngles.backToHead.angle,
+        forwardPosition: Math.abs(jointAngles.backToHead.angle) * 2, // Rough conversion
+        symmetry: 90 // Default
+      }
+    }
+  }
+  
+  function calculateSymmetry(left, right) {
+    const diff = Math.abs(left - right)
+    const avg = (left + right) / 2
+    const symmetry = Math.max(0, 100 - (diff / avg) * 100)
+    return Math.round(symmetry)
   }
 
   const getSymmetryClass = (score) => {
@@ -15,55 +69,33 @@ function FormAnalysis({ data, realTimeData }) {
     return 'needs-improvement'
   }
 
-  const getFootLandingClass = (type) => {
-    if (type === 'midfoot' || type === 'forefoot') return 'optimal'
-    return 'suboptimal'
-  }
-
   return (
     <div className="form-analysis">
       <div className="section-header">
         <h2>Form Analysis</h2>
         <p className="section-description">
-          Detailed analysis of running form including foot landing, posture, and body positioning
+          Detailed analysis of running form including posture and body positioning
         </p>
+        {sessionAverages && (
+          <div className="session-info" style={{ 
+            marginTop: '10px', 
+            padding: '8px 12px', 
+            backgroundColor: '#e8f5e9', 
+            borderRadius: '4px',
+            fontSize: '0.9em',
+            color: '#2e7d32'
+          }}>
+            ✓ Displaying session averages from {sessionAverages.totalFrames || 'N/A'} frames
+            {sessionAverages.sessionEndTime && (
+              <span style={{ marginLeft: '10px', opacity: 0.8 }}>
+                (Session ended: {new Date(sessionAverages.sessionEndTime).toLocaleTimeString()})
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="form-metrics-grid">
-        {/* Foot Landing */}
-        <div className="form-metric-card">
-          <h3>Foot Landing</h3>
-          <div className="metric-content">
-            <div className="landing-comparison">
-              <div className="landing-item">
-                <div className="landing-label">Left</div>
-                <div className={`landing-type ${getFootLandingClass(formAnalysis.footLanding.left)}`}>
-                  {formAnalysis.footLanding.left.charAt(0).toUpperCase() + formAnalysis.footLanding.left.slice(1)}
-                </div>
-              </div>
-              <div className="landing-separator">vs</div>
-              <div className="landing-item">
-                <div className="landing-label">Right</div>
-                <div className={`landing-type ${getFootLandingClass(formAnalysis.footLanding.right)}`}>
-                  {formAnalysis.footLanding.right.charAt(0).toUpperCase() + formAnalysis.footLanding.right.slice(1)}
-                </div>
-              </div>
-            </div>
-            <div className="symmetry-indicator">
-              <span>Symmetry: {formAnalysis.footLanding.symmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.footLanding.symmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.footLanding.symmetry}%` }}
-                />
-              </div>
-            </div>
-            {formAnalysis.footLanding.recommendation && (
-              <p className="metric-tip">{formAnalysis.footLanding.recommendation}</p>
-            )}
-          </div>
-        </div>
-
         {/* Back Position */}
         <div className="form-metric-card">
           <h3>Back Position</h3>

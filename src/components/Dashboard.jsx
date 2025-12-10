@@ -76,54 +76,30 @@ function Dashboard({ data }) {
 
         <div className="metric-card">
           <div className="metric-header">
-            <h3>Hip Angle Symmetry</h3>
+            <h3>Elbow Angle Symmetry</h3>
           </div>
-          <div className={`metric-value ${getSymmetryClass(data.jointAngles.hip.symmetry)}`}>
-            {data.jointAngles.hip.symmetry}%
+          <div className={`metric-value ${getSymmetryClass(data.jointAngles.elbow.symmetry)}`}>
+            {data.jointAngles.elbow.symmetry}%
           </div>
           <p className="metric-description">
-            Left: {data.jointAngles.hip.left.toFixed(1)}° | Right: {data.jointAngles.hip.right.toFixed(1)}°
+            Left: {data.jointAngles.elbow.left.toFixed(1)}° | Right: {data.jointAngles.elbow.right.toFixed(1)}°
           </p>
         </div>
 
         <div className="metric-card">
           <div className="metric-header">
-            <h3>Ankle Angle Symmetry</h3>
+            <h3>Back to Head Tilt</h3>
           </div>
-          <div className={`metric-value ${getSymmetryClass(data.jointAngles.ankle.symmetry)}`}>
-            {data.jointAngles.ankle.symmetry}%
-          </div>
-          <p className="metric-description">
-            Left: {data.jointAngles.ankle.left.toFixed(1)}° | Right: {data.jointAngles.ankle.right.toFixed(1)}°
-          </p>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
-            <h3>Stride Length Symmetry</h3>
-          </div>
-          <div className={`metric-value ${getSymmetryClass(data.strideSymmetry)}`}>
-            {data.strideSymmetry}%
+          <div className={`metric-value ${getSymmetryClass(100 - Math.abs(data.jointAngles.backToHead.angle))}`}>
+            {data.jointAngles.backToHead.angle.toFixed(1)}°
           </div>
           <p className="metric-description">
-            Consistency in step length between legs.
+            Spine curvature: {data.jointAngles.backToHead.spineCurvature.toFixed(1)}°
           </p>
         </div>
 
         {data.formAnalysis && (
           <>
-            <div className="metric-card">
-              <div className="metric-header">
-                <h3>Foot Landing</h3>
-              </div>
-              <div className={`metric-value ${getSymmetryClass(data.formAnalysis.footLanding.symmetry)}`}>
-                {data.formAnalysis.footLanding.symmetry}%
-              </div>
-              <p className="metric-description">
-                Left: {data.formAnalysis.footLanding.left} | Right: {data.formAnalysis.footLanding.right}
-              </p>
-            </div>
-
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Back Position</h3>

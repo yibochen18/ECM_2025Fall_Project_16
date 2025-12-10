@@ -4,29 +4,47 @@
 function generateTimeSeriesData(duration = 300) {
   const data = []
   const baseAngles = {
-    knee: { left: 165, right: 165 },
-    hip: { left: 170, right: 170 },
-    ankle: { left: 110, right: 110 }
+    frontKnee: 160,
+    backKnee: 145,
+    elbow: { left: 90, right: 90 },
+    backToHead: 0
   }
 
   for (let i = 0; i < duration; i++) {
-    // Simulate natural variation in running form
-    const variation = Math.sin(i / 20) * 5 + (Math.random() - 0.5) * 3
-    
+    const variation = Math.sin(i / 20) * 3 + (Math.random() - 0.5) * 2
+    const elbowVar = (Math.random() - 0.5) * 4
+    const headVar = (Math.random() - 0.5) * 2
+
     data.push({
       timestamp: i,
       jointAngles: {
+        frontKnee: {
+          angle: baseAngles.frontKnee + variation,
+          side: variation > 0 ? 'left' : 'right'
+        },
+        backKnee: {
+          angle: baseAngles.backKnee - variation * 0.5,
+          side: variation > 0 ? 'right' : 'left'
+        },
+        elbow: {
+          left: baseAngles.elbow.left + elbowVar,
+          right: baseAngles.elbow.right - elbowVar,
+          symmetry: calculateSymmetry(
+            baseAngles.elbow.left + elbowVar,
+            baseAngles.elbow.right - elbowVar
+          )
+        },
+        backToHead: {
+          angle: baseAngles.backToHead + headVar,
+          spineCurvature: 10 + (Math.random() - 0.5) * 2
+        },
         knee: {
-          left: baseAngles.knee.left + variation + (Math.random() - 0.5) * 2,
-          right: baseAngles.knee.right - variation * 0.8 + (Math.random() - 0.5) * 2
-        },
-        hip: {
-          left: baseAngles.hip.left + variation * 0.7 + (Math.random() - 0.5) * 2,
-          right: baseAngles.hip.right - variation * 0.7 + (Math.random() - 0.5) * 2
-        },
-        ankle: {
-          left: baseAngles.ankle.left + variation * 0.5 + (Math.random() - 0.5) * 2,
-          right: baseAngles.ankle.right - variation * 0.5 + (Math.random() - 0.5) * 2
+          left: baseAngles.frontKnee + variation,
+          right: baseAngles.backKnee - variation * 0.5,
+          symmetry: calculateSymmetry(
+            baseAngles.frontKnee + variation,
+            baseAngles.backKnee - variation * 0.5
+          )
         }
       }
     })
@@ -44,61 +62,62 @@ function calculateSymmetry(left, right) {
 
 function calculateAsymmetryScore(jointAngles) {
   const kneeDiff = Math.abs(jointAngles.knee.left - jointAngles.knee.right)
-  const hipDiff = Math.abs(jointAngles.hip.left - jointAngles.hip.right)
-  const ankleDiff = Math.abs(jointAngles.ankle.left - jointAngles.ankle.right)
-  
-  const avgDiff = (kneeDiff + hipDiff + ankleDiff) / 3
-  return avgDiff
+  const elbowDiff = Math.abs(jointAngles.elbow.left - jointAngles.elbow.right)
+  return (kneeDiff + elbowDiff) / 2
 }
 
 export function getMockData() {
   const timeSeriesData = generateTimeSeriesData(300)
   
   // Calculate average angles from time series
+  const avgFrontKnee = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.frontKnee.angle, 0) / timeSeriesData.length
+  const avgBackKnee = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.backKnee.angle, 0) / timeSeriesData.length
   const avgKneeLeft = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.knee.left, 0) / timeSeriesData.length
   const avgKneeRight = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.knee.right, 0) / timeSeriesData.length
-  const avgHipLeft = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.hip.left, 0) / timeSeriesData.length
-  const avgHipRight = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.hip.right, 0) / timeSeriesData.length
-  const avgAnkleLeft = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.ankle.left, 0) / timeSeriesData.length
-  const avgAnkleRight = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.ankle.right, 0) / timeSeriesData.length
+  const avgElbowLeft = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.elbow.left, 0) / timeSeriesData.length
+  const avgElbowRight = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.elbow.right, 0) / timeSeriesData.length
+  const avgBackToHead = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.backToHead.angle, 0) / timeSeriesData.length
+  const avgSpineCurvature = timeSeriesData.reduce((sum, d) => sum + d.jointAngles.backToHead.spineCurvature, 0) / timeSeriesData.length
 
   const jointAngles = {
+    frontKnee: {
+      angle: avgFrontKnee,
+      min: avgFrontKnee - 5,
+      max: avgFrontKnee + 5,
+      side: 'left'
+    },
+    backKnee: {
+      angle: avgBackKnee,
+      min: avgBackKnee - 5,
+      max: avgBackKnee + 5,
+      side: 'right'
+    },
+    backToHead: {
+      angle: avgBackToHead,
+      spineCurvature: avgSpineCurvature
+    },
+    elbow: {
+      left: avgElbowLeft,
+      right: avgElbowRight,
+      symmetry: calculateSymmetry(avgElbowLeft, avgElbowRight)
+    },
     knee: {
       left: avgKneeLeft,
       right: avgKneeRight,
       symmetry: calculateSymmetry(avgKneeLeft, avgKneeRight)
-    },
-    hip: {
-      left: avgHipLeft,
-      right: avgHipRight,
-      symmetry: calculateSymmetry(avgHipLeft, avgHipRight)
-    },
-    ankle: {
-      left: avgAnkleLeft,
-      right: avgAnkleRight,
-      symmetry: calculateSymmetry(avgAnkleLeft, avgAnkleRight)
     }
   }
 
   const asymmetryScore = calculateAsymmetryScore({
     knee: { left: avgKneeLeft, right: avgKneeRight },
-    hip: { left: avgHipLeft, right: avgHipRight },
-    ankle: { left: avgAnkleLeft, right: avgAnkleRight }
+    elbow: { left: avgElbowLeft, right: avgElbowRight }
   })
 
   const overallSymmetry = Math.round(
-    (jointAngles.knee.symmetry + jointAngles.hip.symmetry + jointAngles.ankle.symmetry) / 3
+    (jointAngles.knee.symmetry + jointAngles.elbow.symmetry) / 2
   )
 
   const strideSymmetry = 85 + Math.random() * 10 // Simulated stride symmetry
-
-  // Form analysis metrics
-  const footLanding = {
-    left: ['heel', 'midfoot', 'forefoot'][Math.floor(Math.random() * 3)],
-    right: ['heel', 'midfoot', 'forefoot'][Math.floor(Math.random() * 3)],
-    symmetry: Math.floor(70 + Math.random() * 25), // 70-95%
-    recommendation: 'Aim for midfoot or forefoot landing for better shock absorption'
-  }
 
   const backPosition = {
     forwardLean: 5 + Math.random() * 3, // 5-8 degrees
@@ -151,7 +170,6 @@ export function getMockData() {
     totalSteps: 3420,
     timeSeriesData,
     formAnalysis: {
-      footLanding,
       backPosition,
       kneeAnglesAtLanding,
       armsPosition,
@@ -174,66 +192,63 @@ export function getMockData() {
         title: 'Hip Alignment is Good',
         description: 'Your hip angles are well-balanced, indicating good core stability during your run.'
       },
-      {
-        type: 'info',
-        title: 'Ankle Symmetry Improving',
-        description: 'Ankle angles are showing good symmetry. Continue focusing on consistent foot strike patterns.'
-      }
     ]
   }
 }
 
 export function simulateRealTimeData() {
   const baseAngles = {
-    knee: { left: 165, right: 165 },
-    hip: { left: 170, right: 170 },
-    ankle: { left: 110, right: 110 }
+    frontKnee: 160,
+    backKnee: 145,
+    elbow: { left: 90, right: 90 },
+    backToHead: 0
   }
 
-  // Add some variation to simulate real-time changes
   const variation = (Math.random() - 0.5) * 4
-  const kneeLeft = baseAngles.knee.left + variation
-  const kneeRight = baseAngles.knee.right - variation * 0.9
-  const hipLeft = baseAngles.hip.left + variation * 0.7
-  const hipRight = baseAngles.hip.right - variation * 0.7
-  const ankleLeft = baseAngles.ankle.left + variation * 0.5
-  const ankleRight = baseAngles.ankle.right - variation * 0.5
+  const elbowVar = (Math.random() - 0.5) * 4
+  const headVar = (Math.random() - 0.5) * 2
+
+  const frontKnee = baseAngles.frontKnee + variation
+  const backKnee = baseAngles.backKnee - variation * 0.5
 
   const jointAngles = {
+    frontKnee: {
+      angle: frontKnee,
+      side: variation > 0 ? 'left' : 'right'
+    },
+    backKnee: {
+      angle: backKnee,
+      side: variation > 0 ? 'right' : 'left'
+    },
+    backToHead: {
+      angle: baseAngles.backToHead + headVar,
+      spineCurvature: 10 + (Math.random() - 0.5) * 2
+    },
+    elbow: {
+      left: baseAngles.elbow.left + elbowVar,
+      right: baseAngles.elbow.right - elbowVar,
+      symmetry: calculateSymmetry(
+        baseAngles.elbow.left + elbowVar,
+        baseAngles.elbow.right - elbowVar
+      )
+    },
     knee: {
-      left: kneeLeft,
-      right: kneeRight,
-      symmetry: calculateSymmetry(kneeLeft, kneeRight)
-    },
-    hip: {
-      left: hipLeft,
-      right: hipRight,
-      symmetry: calculateSymmetry(hipLeft, hipRight)
-    },
-    ankle: {
-      left: ankleLeft,
-      right: ankleRight,
-      symmetry: calculateSymmetry(ankleLeft, ankleRight)
+      left: frontKnee,
+      right: backKnee,
+      symmetry: calculateSymmetry(frontKnee, backKnee)
     }
   }
 
   const asymmetryScore = calculateAsymmetryScore({
-    knee: { left: kneeLeft, right: kneeRight },
-    hip: { left: hipLeft, right: hipRight },
-    ankle: { left: ankleLeft, right: ankleRight }
+    knee: { left: jointAngles.knee.left, right: jointAngles.knee.right },
+    elbow: { left: jointAngles.elbow.left, right: jointAngles.elbow.right }
   })
 
   const overallSymmetry = Math.round(
-    (jointAngles.knee.symmetry + jointAngles.hip.symmetry + jointAngles.ankle.symmetry) / 3
+    (jointAngles.knee.symmetry + jointAngles.elbow.symmetry) / 2
   )
 
   // Form analysis metrics for real-time
-  const footLanding = {
-    left: ['heel', 'midfoot', 'forefoot'][Math.floor(Math.random() * 3)],
-    right: ['heel', 'midfoot', 'forefoot'][Math.floor(Math.random() * 3)],
-    symmetry: Math.floor(70 + Math.random() * 25)
-  }
-
   const backPosition = {
     forwardLean: 5 + Math.random() * 3,
     symmetry: Math.floor(80 + Math.random() * 15),
@@ -280,7 +295,6 @@ export function simulateRealTimeData() {
     strideSymmetry: 85 + Math.random() * 10,
     timestamp: new Date().toISOString(),
     formAnalysis: {
-      footLanding,
       backPosition,
       kneeAnglesAtLanding,
       armsPosition,

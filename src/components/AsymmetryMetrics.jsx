@@ -13,14 +13,9 @@ function AsymmetryMetrics({ data, realTimeData }) {
       symmetry: displayData.jointAngles.knee.symmetry
     },
     {
-      joint: 'Hip',
-      asymmetry: Math.abs(displayData.jointAngles.hip.left - displayData.jointAngles.hip.right),
-      symmetry: displayData.jointAngles.hip.symmetry
-    },
-    {
-      joint: 'Ankle',
-      asymmetry: Math.abs(displayData.jointAngles.ankle.left - displayData.jointAngles.ankle.right),
-      symmetry: displayData.jointAngles.ankle.symmetry
+      joint: 'Elbow',
+      asymmetry: Math.abs(displayData.jointAngles.elbow.left - displayData.jointAngles.elbow.right),
+      symmetry: displayData.jointAngles.elbow.symmetry
     }
   ]
 
@@ -31,20 +26,8 @@ function AsymmetryMetrics({ data, realTimeData }) {
       symmetry: displayData.jointAngles.knee.symmetry
     },
     {
-      metric: 'Hip',
-      symmetry: displayData.jointAngles.hip.symmetry
-    },
-    {
-      metric: 'Ankle',
-      symmetry: displayData.jointAngles.ankle.symmetry
-    },
-    {
-      metric: 'Stride',
-      symmetry: displayData.strideSymmetry
-    },
-    {
-      metric: 'Overall',
-      symmetry: displayData.overallSymmetry
+      metric: 'Elbow',
+      symmetry: displayData.jointAngles.elbow.symmetry
     }
   ]
 

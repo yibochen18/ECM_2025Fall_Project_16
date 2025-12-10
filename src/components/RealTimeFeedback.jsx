@@ -21,8 +21,7 @@ function RealTimeFeedback({ data, realTimeData, isActive }) {
   const getJointFeedback = () => {
     const joints = [
       { name: 'Knee', symmetry: currentData.jointAngles.knee.symmetry },
-      { name: 'Hip', symmetry: currentData.jointAngles.hip.symmetry },
-      { name: 'Ankle', symmetry: currentData.jointAngles.ankle.symmetry }
+      { name: 'Elbow', symmetry: currentData.jointAngles.elbow.symmetry }
     ]
 
     return joints.map(joint => {
@@ -56,18 +55,11 @@ function RealTimeFeedback({ data, realTimeData, isActive }) {
       }
     }
 
-    if (currentData.jointAngles.hip.symmetry < 75) {
+    if (currentData.jointAngles.elbow.symmetry < 75) {
+      const diff = Math.abs(currentData.jointAngles.elbow.left - currentData.jointAngles.elbow.right)
       feedback.push({
         type: 'action',
-        message: 'Work on hip alignment - ensure both hips are level during stride',
-        priority: 'medium'
-      })
-    }
-
-    if (currentData.strideSymmetry < 75) {
-      feedback.push({
-        type: 'action',
-        message: 'Focus on consistent stride length between both legs',
+        message: `Balance arm swing - reduce elbow angle difference by ${diff.toFixed(1)}°`,
         priority: 'medium'
       })
     }
@@ -107,12 +99,6 @@ function RealTimeFeedback({ data, realTimeData, isActive }) {
               <span className="metric-name">Asymmetry Score</span>
               <span className={`metric-value ${currentData.asymmetryScore < 2 ? 'success' : currentData.asymmetryScore < 5 ? 'warning' : 'error'}`}>
                 {currentData.asymmetryScore.toFixed(1)}%
-              </span>
-            </div>
-            <div className="metric-item">
-              <span className="metric-name">Stride Symmetry</span>
-              <span className={`metric-value ${getFeedbackType(currentData.strideSymmetry).type}`}>
-                {currentData.strideSymmetry}%
               </span>
             </div>
           </div>
@@ -160,7 +146,7 @@ function RealTimeFeedback({ data, realTimeData, isActive }) {
           <li>Focus on maintaining equal weight distribution between both legs</li>
           <li>Keep your core engaged to stabilize your hips</li>
           <li>Practice running drills to improve muscle balance</li>
-          <li>Pay attention to your landing - aim for midfoot strikes</li>
+          <li>Keep arms balanced to improve overall symmetry</li>
           <li>Maintain a consistent cadence (steps per minute)</li>
         </ul>
       </div>
