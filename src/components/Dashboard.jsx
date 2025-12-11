@@ -89,12 +89,10 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       },
       kneeAnglesAtLanding: {
         frontKnee: {
-          angle: frontKneeAngle, // Average front knee angle
-          symmetry: kneeSymmetry
+          angle: frontKneeAngle // Average front knee angle
         },
         backKnee: {
-          angle: backKneeAngle, // Average back knee angle
-          symmetry: kneeSymmetry
+          angle: backKneeAngle // Average back knee angle
         }
       },
       armsPosition: {
@@ -142,12 +140,10 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       },
       kneeAnglesAtLanding: {
         frontKnee: {
-          angle: frontKneeAvg, // Average front knee angle
-          symmetry: kneeSymmetry
+          angle: frontKneeAvg // Average front knee angle
         },
         backKnee: {
-          angle: backKneeAvg, // Average back knee angle
-          symmetry: kneeSymmetry
+          angle: backKneeAvg // Average back knee angle
         }
       },
       armsPosition: {
