@@ -38,7 +38,7 @@ export const feedbackConfig = {
   backToHead: {
     excellent: { min: -15, max: 5, message: "Perfect posture! Your back-to-head alignment is ideal. Keep your gaze looking forward." },
     good: { min: -18, max: -15, message: "Good posture. You're maintaining a relatively straight gaze." },
-    tooForward: { min: 0, max: 200, message: "Your gaze is too focused on the ground, lift gaze to improve posture. Risk of slouched posture." },
+    tooForward: { min: 6, max: 200, message: "Your gaze is too focused on the ground, lift gaze to improve posture. Risk of slouched posture." },
     tooBackward: { min: -200, max: -18, message: "You're gazing at the sky, lower gaze to improve posture. Poor running posture." }
   },
 
@@ -46,7 +46,7 @@ export const feedbackConfig = {
   kneeSymmetry: {
     excellent: { min: 90, max: 100, message: "Excellent knee symmetry! Both legs are working equally." },
     good: { min: 75, max: 90, message: "Good knee symmetry. Minor differences are normal." },
-    needsImprovement: { min: 0, max: 75, message: "Your knee angles show asymmetry. Focus on balanced leg movement." },
+    needsImprovement: { min: 51, max: 75, message: "Your knee angles show asymmetry. Focus on balanced leg movement." },
     bad: { min: 0, max: 50, message: "Significant knee asymmetry detected. Consider working on leg strength balance." }
   }
 }

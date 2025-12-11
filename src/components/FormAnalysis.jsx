@@ -1,5 +1,6 @@
 import React from 'react'
 import './FormAnalysis.css'
+import { getFeedbackForMetric } from '../utils/feedbackConfig'
 
 // Convert session-level averages into the formAnalysis structure
 // expected by the UI below. This keeps the component logic simple
@@ -22,10 +23,16 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   const elbow = ja.elbow || {}
   const knee = ja.knee || {}
 
+  // Determine status based on feedbackConfig thresholds
+  const backToHeadAngle = safeNumber(backToHead.angle)
+  const backToHeadFeedback = getFeedbackForMetric('backToHead', backToHeadAngle)
+  const backPositionStatus = backToHeadFeedback.threshold === 'excellent' || backToHeadFeedback.threshold === 'good' 
+    ? 'Good' 
+    : 'Warning'
+
   const backPosition = {
-    forwardLean: safeNumber(backToHead.angle),
-    status: 'Good',
-    symmetry: safeNumber(knee.symmetry, 0),
+    forwardLean: backToHeadAngle,
+    status: backPositionStatus,
   }
 
   // Front/back knee angles are averages from the session
@@ -98,6 +105,22 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
     return 'needs-improvement'
   }
 
+  // Get status for angle-based metrics using feedbackConfig (similar to Dashboard)
+  const getAngleStatus = (metricType, angle) => {
+    const feedback = getFeedbackForMetric(metricType, angle)
+    return {
+      class: feedback.threshold === 'excellent' ? 'excellent' : 
+             feedback.threshold === 'good' ? 'good' : 
+             feedback.threshold === 'needsImprovement' ? 'needs-improvement' : 'needs-improvement',
+      label: feedback.threshold === 'excellent' ? 'Excellent' :
+             feedback.threshold === 'good' ? 'Good' :
+             feedback.threshold === 'needsImprovement' ? 'Needs Improvement' :
+             feedback.threshold === 'bad' ? 'Bad' :
+             feedback.threshold === 'tooForward' ? 'Too Forward' :
+             feedback.threshold === 'tooBackward' ? 'Too Backward' : 'Needs Improvement'
+    }
+  }
+
   return (
     <div className="form-analysis">
       <div className="section-header">
@@ -140,15 +163,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 {formAnalysis.backPosition.status}
               </span>
             </div>
-            <div className="symmetry-indicator">
-              <span>Symmetry: {formAnalysis.backPosition.symmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.backPosition.symmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.backPosition.symmetry}%` }}
-                />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -162,6 +176,11 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
               </div>
               <div className="position-label">Average Front Knee Angle</div>
             </div>
+            <div className="position-status">
+              <span className={`status-badge ${getAngleStatus('frontKnee', formAnalysis.kneeAnglesAtLanding.frontKnee.angle).class}`}>
+                {getAngleStatus('frontKnee', formAnalysis.kneeAnglesAtLanding.frontKnee.angle).label}
+              </span>
+            </div>
             <div className="symmetry-indicator">
               <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%</span>
               <div className="symmetry-bar">
@@ -171,7 +190,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            <p className="metric-tip">Optimal: 135-170° for efficient shock absorption</p>
           </div>
         </div>
 
@@ -185,6 +203,11 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
               </div>
               <div className="position-label">Average Back Knee Angle</div>
             </div>
+            <div className="position-status">
+              <span className={`status-badge ${getAngleStatus('backKnee', formAnalysis.kneeAnglesAtLanding.backKnee.angle).class}`}>
+                {getAngleStatus('backKnee', formAnalysis.kneeAnglesAtLanding.backKnee.angle).label}
+              </span>
+            </div>
             <div className="symmetry-indicator">
               <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%</span>
               <div className="symmetry-bar">
@@ -194,7 +217,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            <p className="metric-tip">Optimal: 100-116° for proper leg recovery</p>
           </div>
         </div>
 
@@ -216,6 +238,11 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                   {formAnalysis.armsPosition.rightAngle.toFixed(1)}°
                 </div>
               </div>
+            </div>
+            <div className="position-status">
+              <span className={`status-badge ${getAngleStatus('elbow', (formAnalysis.armsPosition.leftAngle + formAnalysis.armsPosition.rightAngle) / 2).class}`}>
+                {getAngleStatus('elbow', (formAnalysis.armsPosition.leftAngle + formAnalysis.armsPosition.rightAngle) / 2).label}
+              </span>
             </div>
             <div className="symmetry-indicator">
               <span>Angle Symmetry: {formAnalysis.armsPosition.symmetry}%</span>
@@ -240,6 +267,11 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                   {formAnalysis.headPosition.tilt > 0 ? '+' : ''}{formAnalysis.headPosition.tilt.toFixed(1)}°
                 </div>
               </div>
+            </div>
+            <div className="position-status">
+              <span className={`status-badge ${getAngleStatus('backToHead', formAnalysis.headPosition.tilt).class}`}>
+                {getAngleStatus('backToHead', formAnalysis.headPosition.tilt).label}
+              </span>
             </div>
           </div>
         </div>
