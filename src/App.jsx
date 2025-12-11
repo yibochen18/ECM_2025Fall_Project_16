@@ -4,7 +4,6 @@ import JointAngles from './components/JointAngles'
 import AsymmetryMetrics from './components/AsymmetryMetrics'
 import RealTimeFeedback from './components/RealTimeFeedback'
 import FormAnalysis from './components/FormAnalysis'
-import { getMockData } from './utils/mockData'
 import './App.css'
 
 function App() {
@@ -13,12 +12,9 @@ function App() {
   const [realTimeData, setRealTimeData] = useState(null)
   const [isRealTime, setIsRealTime] = useState(false)
   const [realTimeSeries, setRealTimeSeries] = useState([])
+  const [sessionAverages, setSessionAverages] = useState(null)
 
-  useEffect(() => {
-    // Load initial run data
-    const data = getMockData()
-    setRunData(data)
-  }, [])
+  // runData is kept for backward compatibility but will be null initially
 
   useEffect(() => {
     if (!isRealTime) {
@@ -41,7 +37,14 @@ function App() {
 
         // Expect backend message to match live joint-angle sample shape
         // { frontKnee, backKnee, backToHead, elbow, knee }
-        setRealTimeData(message)
+        // Check if backend includes session averages in the response
+        if (message.sessionAverages || message.averages) {
+          setSessionAverages(message.sessionAverages || message.averages)
+        }
+        
+        // Extract just the real-time data (without averages)
+        const { sessionAverages: _, averages: __, ...realtimeOnly } = message
+        setRealTimeData(realtimeOnly)
 
         // Accumulate real-time frames into an array where each point
         // has the same shape as the incoming message. JointAngles
@@ -75,6 +78,11 @@ function App() {
       // Reset real-time state when switching back to offline mode
       setRealTimeData(null)
       setRealTimeSeries([])
+      // Note: sessionAverages should be included in joint-angles response from backend
+      // If not available, components will display appropriate empty states
+    } else {
+      // When starting a new session, clear previous session averages
+      setSessionAverages(null)
     }
   }, [isRealTime])
 
@@ -136,10 +144,14 @@ function App() {
       </header>
 
       <main className="app-main">
-        {currentView === 'dashboard' && runData && (
-          <Dashboard data={runData} />
+        {currentView === 'dashboard' && (
+          <Dashboard 
+            data={runData} 
+            realTimeData={realTimeData}
+            sessionAverages={sessionAverages}
+          />
         )}
-        {currentView === 'joints' && runData && (
+        {currentView === 'joints' && (
           <JointAngles 
             data={runData} 
             realTimeData={
@@ -149,20 +161,22 @@ function App() {
             } 
           />
         )}
-        {currentView === 'asymmetry' && runData && (
+        {currentView === 'asymmetry' && (
           <AsymmetryMetrics data={runData} realTimeData={realTimeData} />
         )}
         {currentView === 'realtime' && (
           <RealTimeFeedback 
             data={runData} 
             realTimeData={realTimeData}
+            sessionAverages={sessionAverages}
             isActive={isRealTime}
           />
         )}
-        {currentView === 'form' && runData && (
+        {currentView === 'form' && (
           <FormAnalysis 
             data={runData} 
             realTimeData={realTimeData}
+            sessionAverages={sessionAverages}
           />
         )}
       </main>

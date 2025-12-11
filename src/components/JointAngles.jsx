@@ -5,6 +5,23 @@ import './JointAngles.css'
 function JointAngles({ data, realTimeData }) {
   const displayData = realTimeData || data
 
+  // Handle no data case
+  if (!displayData) {
+    return (
+      <div className="joint-angles">
+        <div className="section-header">
+          <h2>Joint Angle Analysis</h2>
+          <p className="section-description">
+            Real-time monitoring of joint angles to detect asymmetries in running form
+          </p>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No data available. Start a live session to see joint angle metrics.</p>
+        </div>
+      </div>
+    )
+  }
+
   // Prepare chart data
   const chartData = displayData.timeSeriesData?.map((point, index) => ({
     time: `${Math.floor(index / 60)}:${String(index % 60).padStart(2, '0')}`,
@@ -16,6 +33,23 @@ function JointAngles({ data, realTimeData }) {
   })) || []
 
   const currentAngles = displayData.jointAngles || displayData
+
+  // Check if we have the required angle data
+  if (!currentAngles.frontKnee?.angle && !currentAngles.backKnee?.angle && !currentAngles.elbow?.left) {
+    return (
+      <div className="joint-angles">
+        <div className="section-header">
+          <h2>Joint Angle Analysis</h2>
+          <p className="section-description">
+            Real-time monitoring of joint angles to detect asymmetries in running form
+          </p>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No joint angle data available. Start a live session to see metrics.</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="joint-angles">
@@ -32,7 +66,11 @@ function JointAngles({ data, realTimeData }) {
           <div className="angle-comparison">
             <div className="angle-display">
               <div className="angle-label">Angle</div>
-              <div className="angle-value">{currentAngles.frontKnee.angle.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.frontKnee?.angle !== undefined 
+                  ? `${currentAngles.frontKnee.angle.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
           </div>
         </div>
@@ -42,7 +80,11 @@ function JointAngles({ data, realTimeData }) {
           <div className="angle-comparison">
             <div className="angle-display">
               <div className="angle-label">Angle</div>
-              <div className="angle-value">{currentAngles.backKnee.angle.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.backKnee?.angle !== undefined 
+                  ? `${currentAngles.backKnee.angle.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
           </div>
         </div>
@@ -52,23 +94,33 @@ function JointAngles({ data, realTimeData }) {
           <div className="angle-comparison">
             <div className="angle-display">
               <div className="angle-label">Left</div>
-              <div className="angle-value">{currentAngles.elbow.left.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.elbow?.left !== undefined 
+                  ? `${currentAngles.elbow.left.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
             <div className="angle-separator">vs</div>
             <div className="angle-display">
               <div className="angle-label">Right</div>
-              <div className="angle-value">{currentAngles.elbow.right.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.elbow?.right !== undefined 
+                  ? `${currentAngles.elbow.right.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
           </div>
-          <div className="symmetry-indicator">
-            <span>Symmetry: {currentAngles.elbow.symmetry}%</span>
-            <div className="symmetry-bar">
-              <div 
-                className={`symmetry-fill ${currentAngles.elbow.symmetry >= 90 ? 'excellent' : currentAngles.elbow.symmetry >= 75 ? 'good' : 'needs-improvement'}`}
-                style={{ '--symmetry-width': `${currentAngles.elbow.symmetry}%` }}
-              />
+          {currentAngles.elbow?.symmetry !== undefined && (
+            <div className="symmetry-indicator">
+              <span>Symmetry: {currentAngles.elbow.symmetry}%</span>
+              <div className="symmetry-bar">
+                <div 
+                  className={`symmetry-fill ${currentAngles.elbow.symmetry >= 90 ? 'excellent' : currentAngles.elbow.symmetry >= 75 ? 'good' : 'needs-improvement'}`}
+                  style={{ '--symmetry-width': `${currentAngles.elbow.symmetry}%` }}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="joint-card">
@@ -76,11 +128,19 @@ function JointAngles({ data, realTimeData }) {
           <div className="angle-comparison">
             <div className="angle-display">
               <div className="angle-label">Tilt</div>
-              <div className="angle-value">{currentAngles.backToHead.angle.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.backToHead?.angle !== undefined 
+                  ? `${currentAngles.backToHead.angle.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
             <div className="angle-display">
               <div className="angle-label">Spine Curvature</div>
-              <div className="angle-value">{currentAngles.backToHead.spineCurvature.toFixed(1)}°</div>
+              <div className="angle-value">
+                {currentAngles.backToHead?.spineCurvature !== undefined 
+                  ? `${currentAngles.backToHead.spineCurvature.toFixed(1)}°` 
+                  : 'N/A'}
+              </div>
             </div>
           </div>
         </div>
