@@ -5,17 +5,40 @@ import './AsymmetryMetrics.css'
 function AsymmetryMetrics({ data, realTimeData }) {
   const displayData = realTimeData || data
 
+  // Handle no data case
+  if (!displayData || !displayData.jointAngles) {
+    return (
+      <div className="asymmetry-metrics">
+        <div className="section-header">
+          <h2>Asymmetry Analysis</h2>
+          <p className="section-description">
+            Detailed breakdown of form asymmetries to identify areas for improvement
+          </p>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No data available. Start a live session to see asymmetry metrics.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const jointAngles = displayData.jointAngles || {}
+
   // Prepare bar chart data
   const asymmetryData = [
     {
       joint: 'Knee',
-      asymmetry: Math.abs(displayData.jointAngles.knee.left - displayData.jointAngles.knee.right),
-      symmetry: displayData.jointAngles.knee.symmetry
+      asymmetry: (jointAngles.knee?.left !== undefined && jointAngles.knee?.right !== undefined)
+        ? Math.abs(jointAngles.knee.left - jointAngles.knee.right)
+        : 0,
+      symmetry: jointAngles.knee?.symmetry || 0
     },
     {
       joint: 'Elbow',
-      asymmetry: Math.abs(displayData.jointAngles.elbow.left - displayData.jointAngles.elbow.right),
-      symmetry: displayData.jointAngles.elbow.symmetry
+      asymmetry: (jointAngles.elbow?.left !== undefined && jointAngles.elbow?.right !== undefined)
+        ? Math.abs(jointAngles.elbow.left - jointAngles.elbow.right)
+        : 0,
+      symmetry: jointAngles.elbow?.symmetry || 0
     }
   ]
 
@@ -23,11 +46,11 @@ function AsymmetryMetrics({ data, realTimeData }) {
   const radarData = [
     {
       metric: 'Knee',
-      symmetry: displayData.jointAngles.knee.symmetry
+      symmetry: jointAngles.knee?.symmetry || 0
     },
     {
       metric: 'Elbow',
-      symmetry: displayData.jointAngles.elbow.symmetry
+      symmetry: jointAngles.elbow?.symmetry || 0
     }
   ]
 
@@ -50,12 +73,21 @@ function AsymmetryMetrics({ data, realTimeData }) {
         <div className="overview-card">
           <h3>Overall Asymmetry Score</h3>
           <div className="score-display">
-            <div className={`score-value ${getAsymmetryLevel(displayData.asymmetryScore).class}`}>
-              {displayData.asymmetryScore.toFixed(1)}%
-            </div>
-            <div className={`score-label ${getAsymmetryLevel(displayData.asymmetryScore).class}`}>
-              {getAsymmetryLevel(displayData.asymmetryScore).level} Asymmetry
-            </div>
+            {displayData.asymmetryScore !== undefined ? (
+              <>
+                <div className={`score-value ${getAsymmetryLevel(displayData.asymmetryScore).class}`}>
+                  {displayData.asymmetryScore.toFixed(1)}%
+                </div>
+                <div className={`score-label ${getAsymmetryLevel(displayData.asymmetryScore).class}`}>
+                  {getAsymmetryLevel(displayData.asymmetryScore).level} Asymmetry
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="score-value">N/A</div>
+                <div className="score-label">No Data</div>
+              </>
+            )}
           </div>
           <p className="score-description">
             Lower scores indicate better symmetry. Aim for &lt; 2% asymmetry.

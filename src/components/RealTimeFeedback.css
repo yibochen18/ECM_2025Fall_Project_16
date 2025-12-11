@@ -279,6 +279,177 @@
   font-weight: bold;
 }
 
+/* Session Averages Banner */
+.session-averages-banner {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.session-averages-banner strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.session-averages-banner p {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Session Feedback Section */
+.session-feedback {
+  background: var(--card-bg);
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-color);
+  margin-bottom: 2rem;
+}
+
+.session-feedback h3 {
+  font-size: 1.1rem;
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* Session Feedback Items */
+.session-feedback-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  background: var(--bg-color);
+  border-radius: 0.5rem;
+  border-left: 4px solid;
+  margin-bottom: 1rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.session-feedback-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.session-feedback-item.success {
+  border-left-color: var(--secondary-color);
+  background: linear-gradient(to right, rgba(76, 175, 80, 0.05), var(--bg-color));
+}
+
+.session-feedback-item.warning {
+  border-left-color: var(--warning-color);
+  background: linear-gradient(to right, rgba(255, 152, 0, 0.05), var(--bg-color));
+}
+
+.session-feedback-item.error {
+  border-left-color: var(--danger-color);
+  background: linear-gradient(to right, rgba(244, 67, 54, 0.05), var(--bg-color));
+}
+
+.session-feedback-item.info {
+  border-left-color: var(--primary-color);
+  background: linear-gradient(to right, rgba(33, 150, 243, 0.05), var(--bg-color));
+}
+
+/* Feedback Header */
+.session-feedback-item .feedback-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.session-feedback-item .feedback-metric-name {
+  flex: 1;
+  min-width: 200px;
+}
+
+.session-feedback-item .feedback-metric-name strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.session-feedback-item .feedback-value,
+.session-feedback-item .feedback-range,
+.session-feedback-item .feedback-symmetry {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 400;
+  margin-left: 0.5rem;
+}
+
+.session-feedback-item .feedback-range {
+  margin-left: 0.75rem;
+}
+
+.session-feedback-item .feedback-symmetry {
+  margin-left: 0.75rem;
+  font-weight: 500;
+}
+
+/* Feedback Type Badge */
+.session-feedback-item .feedback-type-badge {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.session-feedback-item .feedback-type-badge.success {
+  background: var(--secondary-color);
+}
+
+.session-feedback-item .feedback-type-badge.warning {
+  background: var(--warning-color);
+}
+
+.session-feedback-item .feedback-type-badge.error {
+  background: var(--danger-color);
+}
+
+.session-feedback-item .feedback-type-badge.info {
+  background: var(--primary-color);
+}
+
+/* Feedback Message */
+.session-feedback-item .feedback-message {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  padding-left: 0.5rem;
+}
+
+/* Symmetry Feedback Message */
+.session-feedback-item .feedback-symmetry-message {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  font-style: italic;
+  border-left: 2px solid var(--border-color);
+  padding-left: 1rem;
+  margin-left: 0.5rem;
+}
+
 @media (max-width: 768px) {
   .feedback-grid {
     grid-template-columns: 1fr;
@@ -287,6 +458,15 @@
   .section-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .session-feedback-item .feedback-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .session-feedback-item .feedback-type-badge {
+    align-self: flex-end;
   }
 }
 

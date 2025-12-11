@@ -8,59 +8,39 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
     formAnalysis: convertSessionAveragesToFormAnalysis(sessionAverages)
   } : (realTimeData || data)
   
+  // Handle no data case
+  if (!displayData) {
+    return (
+      <div className="form-analysis">
+        <div className="section-header">
+          <h2>Form Analysis</h2>
+          <p className="section-description">
+            Detailed analysis of running form including posture and body positioning
+          </p>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No data available. Start a live session to see form analysis.</p>
+        </div>
+      </div>
+    )
+  }
+  
   const formAnalysis = displayData.formAnalysis
 
   if (!formAnalysis) {
-    return <div className="form-analysis">No form analysis data available</div>
-  }
-  
-  // Helper function to convert session averages to form analysis format
-  function convertSessionAveragesToFormAnalysis(avgData) {
-    const jointAngles = avgData.jointAngles
-    
-    const frontKneeAvg = jointAngles.frontKnee.angle
-    const backKneeAvg = jointAngles.backKnee.angle
-    
-    // Calculate symmetry for front/back knees (using left/right knee angles as proxy)
-    const kneeSymmetry = jointAngles.knee.symmetry || 95
-    
-    return {
-      backPosition: {
-        forwardLean: Math.abs(jointAngles.backToHead.angle),
-        symmetry: 90, // Default
-        status: Math.abs(jointAngles.backToHead.angle) < 10 ? 'Good' : 'Warning'
-      },
-      kneeAnglesAtLanding: {
-        frontKnee: {
-          left: frontKneeAvg,
-          right: frontKneeAvg, // Using average for both
-          symmetry: kneeSymmetry
-        },
-        backKnee: {
-          left: backKneeAvg,
-          right: backKneeAvg, // Using average for both
-          symmetry: kneeSymmetry
-        }
-      },
-      armsPosition: {
-        leftAngle: jointAngles.elbow.left,
-        rightAngle: jointAngles.elbow.right,
-        symmetry: jointAngles.elbow.symmetry,
-        swingSymmetry: jointAngles.elbow.symmetry // Using elbow symmetry as proxy
-      },
-      headPosition: {
-        tilt: jointAngles.backToHead.angle,
-        forwardPosition: Math.abs(jointAngles.backToHead.angle) * 2, // Rough conversion
-        symmetry: 90 // Default
-      }
-    }
-  }
-  
-  function calculateSymmetry(left, right) {
-    const diff = Math.abs(left - right)
-    const avg = (left + right) / 2
-    const symmetry = Math.max(0, 100 - (diff / avg) * 100)
-    return Math.round(symmetry)
+    return (
+      <div className="form-analysis">
+        <div className="section-header">
+          <h2>Form Analysis</h2>
+          <p className="section-description">
+            Detailed analysis of running form including posture and body positioning
+          </p>
+        </div>
+        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
+          <p>No form analysis data available. Start a live session to see metrics.</p>
+        </div>
+      </div>
+    )
   }
 
   const getSymmetryClass = (score) => {
