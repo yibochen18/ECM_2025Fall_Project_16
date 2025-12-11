@@ -23,15 +23,14 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   const elbow = ja.elbow || {}
   const knee = ja.knee || {}
 
-  // Determine status based on feedbackConfig thresholds
-  const backToHeadAngle = safeNumber(backToHead.angle)
-  const backToHeadFeedback = getFeedbackForMetric('backToHead', backToHeadAngle)
-  const backPositionStatus = backToHeadFeedback.threshold === 'excellent' || backToHeadFeedback.threshold === 'good' 
-    ? 'Good' 
-    : 'Warning'
+  // Back Position uses spine curvature (angle between spine segments)
+  const spineCurvature = safeNumber(backToHead.spineCurvature, 0)
+  // Note: spine curvature doesn't have feedbackConfig thresholds yet
+  // For now, use a simple threshold: < 180° = curved, closer to 180° = straighter
+  const backPositionStatus = spineCurvature > 170 ? 'Good' : 'Warning'
 
   const backPosition = {
-    forwardLean: backToHeadAngle,
+    forwardLean: spineCurvature, // Actually spine curvature angle
     status: backPositionStatus,
   }
 
@@ -156,7 +155,7 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
               <div className="position-value">
                 {formAnalysis.backPosition.forwardLean.toFixed(1)}°
               </div>
-              <div className="position-label">Forward Lean</div>
+              <div className="position-label">Spine Curvature</div>
             </div>
             <div className="position-status">
               <span className={`status-badge ${formAnalysis.backPosition.status === 'Good' ? 'good' : 'warning'}`}>

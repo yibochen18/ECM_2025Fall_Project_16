@@ -122,14 +122,28 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
+}
+
+.status-badge.excellent {
+  background-color: #4caf50; /* Green for excellent */
+  color: white;
 }
 
 .status-badge.good {
-  background-color: var(--secondary-color);
+  background-color: #ff9800; /* Orange for good */
+  color: white;
+}
+
+.status-badge.needs-improvement,
+.status-badge.bad {
+  background-color: #f44336; /* Red for needs improvement/bad */
+  color: white;
 }
 
 .status-badge.warning {
-  background-color: var(--warning-color);
+  background-color: #ff9800; /* Orange for warning */
+  color: white;
 }
 
 .angle-comparison {
