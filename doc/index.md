@@ -14,6 +14,6 @@ SymStride enables full 3D running kinematics analysis using only low-cost IMUs, 
 - Ido Dukler
 
 ## Required Submissions
-- [Midterm Checkpoint Presentation Slides](link-to-midterm-slides)
+- [Midterm Checkpoint Presentation Slides](midterm_presentation.pdf)
 - [Final Presentation Slides](link-to-final-slides)
 - [Final Report](final_report.md)
