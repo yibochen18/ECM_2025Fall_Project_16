@@ -224,12 +224,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                   {formAnalysis.headPosition.tilt > 0 ? '+' : ''}{formAnalysis.headPosition.tilt.toFixed(1)}°
                 </div>
               </div>
-              <div className="head-metric-item">
-                <div className="head-metric-label">Forward Position</div>
-                <div className="head-metric-value">
-                  {formAnalysis.headPosition.forwardPosition.toFixed(1)} cm
-                </div>
-              </div>
             </div>
             <div className="symmetry-indicator">
               <span>Symmetry: {formAnalysis.headPosition.symmetry}%</span>
