@@ -5,17 +5,19 @@ import { getFeedbackForMetric, getAsymmetryFeedback } from '../utils/feedbackCon
 function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
   const feedbackRef = useRef(null)
 
-  useEffect(() => {
-    if (feedbackRef.current && isActive) {
-      feedbackRef.current.scrollTop = feedbackRef.current.scrollHeight
-    }
-  }, [realTimeData, isActive])
-
   const currentData = realTimeData || data
   
   // Use session averages if available, otherwise use current data
   const displayData = sessionAverages || currentData
   const isShowingAverages = !!sessionAverages
+
+  // Auto-scroll only for live, actionable feedback. When showing
+  // session averages, allow the user to scroll the list freely.
+  useEffect(() => {
+    if (feedbackRef.current && isActive && !isShowingAverages) {
+      feedbackRef.current.scrollTop = feedbackRef.current.scrollHeight
+    }
+  }, [realTimeData, isActive, isShowingAverages])
   
   // Handle case where there's no data at all
   const hasData = displayData && (displayData.jointAngles || displayData.frontKnee || displayData.knee)
@@ -213,7 +215,7 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
 
       {hasData ? (
         <div className="feedback-grid">
-          <div className="current-metrics">
+          {/* <div className="current-metrics">
             <h3>Current Metrics</h3>
             <div className="metric-display">
               <div className="metric-item">
@@ -231,7 +233,7 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
                 </span>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className="joint-status">
             <h3>Joint Status</h3>

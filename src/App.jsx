@@ -119,23 +119,25 @@ function App() {
           >
             Joint Angles
           </button>
+          {/*
           <button
             className={`nav-btn ${currentView === 'asymmetry' ? 'active' : ''}`}
             onClick={() => handleViewChange('asymmetry')}
           >
             Asymmetry Metrics
           </button>
-          <button
-            className={`nav-btn ${currentView === 'realtime' ? 'active' : ''}`}
-            onClick={() => handleViewChange('realtime')}
-          >
-            Feedback
-          </button>
+          */}
           <button
             className={`nav-btn ${currentView === 'form' ? 'active' : ''}`}
             onClick={() => handleViewChange('form')}
           >
             Form Analysis
+          </button>
+          <button
+            className={`nav-btn ${currentView === 'realtime' ? 'active' : ''}`}
+            onClick={() => handleViewChange('realtime')}
+          >
+            Feedback
           </button>
         </nav>
         <div className="header-actions">
@@ -166,9 +168,9 @@ function App() {
             } 
           />
         )}
-        {currentView === 'asymmetry' && (
+        {/* {currentView === 'asymmetry' && (
           <AsymmetryMetrics data={runData} realTimeData={realTimeData} />
-        )}
+        )} */}
         {currentView === 'realtime' && (
           <RealTimeFeedback 
             data={runData} 
