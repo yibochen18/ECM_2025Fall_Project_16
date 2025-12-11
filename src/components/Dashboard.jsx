@@ -49,6 +49,8 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
   
   const overallSymmetry = displayData.overallSymmetry
   const asymmetryScore = displayData.asymmetryScore
+  const runDuration = displayData.runDuration
+  const totalSteps = displayData.totalSteps
   
   // Helper function to convert real-time backend data to dashboard format
   function convertRealTimeDataToDashboardFormat(rtData) {
