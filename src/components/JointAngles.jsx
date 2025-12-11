@@ -135,7 +135,7 @@ function JointAngles({ data, realTimeData }) {
               </div>
             </div>
             <div className="angle-display">
-              <div className="angle-label">Spine Curvature</div>
+              <div className="angle-label">Lean</div>
               <div className="angle-value">
                 {currentAngles.backToHead?.spineCurvature !== undefined 
                   ? `${currentAngles.backToHead.spineCurvature.toFixed(1)}°` 

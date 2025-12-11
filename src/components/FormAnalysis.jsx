@@ -23,15 +23,17 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   const elbow = ja.elbow || {}
   const knee = ja.knee || {}
 
-  // Back Position uses spine curvature (angle between spine segments)
-  const spineCurvature = safeNumber(backToHead.spineCurvature, 0)
-  // Note: spine curvature doesn't have feedbackConfig thresholds yet
-  // For now, use a simple threshold: < 180° = curved, closer to 180° = straighter
-  const backPositionStatus = spineCurvature > 170 ? 'Good' : 'Warning'
-
+  // Back Position uses lean (spine curvature angle - measures forward/backward lean)
+  const lean = safeNumber(backToHead.spineCurvature, 0)
+  // Get feedback from feedbackConfig
+  const leanFeedback = getFeedbackForMetric('lean', lean)
+  
   const backPosition = {
-    forwardLean: spineCurvature, // Actually spine curvature angle
-    status: backPositionStatus,
+    forwardLean: lean, // Lean angle (spine curvature)
+    status: leanFeedback.threshold === 'excellent' ? 'Excellent' :
+            leanFeedback.threshold === 'good' ? 'Good' :
+            leanFeedback.threshold === 'needsImprovement' ? 'Needs Improvement' : 'Bad',
+    threshold: leanFeedback.threshold,
   }
 
   // Front/back knee angles are averages from the session
@@ -114,7 +116,8 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
              feedback.threshold === 'needsImprovement' ? 'Needs Improvement' :
              feedback.threshold === 'bad' ? 'Bad' :
              feedback.threshold === 'tooForward' ? 'Too Forward' :
-             feedback.threshold === 'tooBackward' ? 'Too Backward' : 'Needs Improvement'
+             feedback.threshold === 'tooBackward' ? 'Too Backward' :
+             feedback.threshold === 'tooMuchFlexion' ? 'Too Much Flexion' : 'Needs Improvement'
     }
   }
 
@@ -153,10 +156,15 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
               <div className="position-value">
                 {formAnalysis.backPosition.forwardLean.toFixed(1)}°
               </div>
-              <div className="position-label">Spine Curvature</div>
+              <div className="position-label">Lean</div>
             </div>
             <div className="position-status">
-              <span className={`status-badge ${formAnalysis.backPosition.status === 'Good' ? 'good' : 'warning'}`}>
+              <span className={`status-badge ${
+                formAnalysis.backPosition.threshold === 'excellent' ? 'excellent' :
+                formAnalysis.backPosition.threshold === 'good' ? 'good' :
+                formAnalysis.backPosition.threshold === 'needsImprovement' ? 'needs-improvement' :
+                'bad'
+              }`}>
                 {formAnalysis.backPosition.status}
               </span>
             </div>

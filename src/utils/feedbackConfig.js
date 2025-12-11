@@ -10,6 +10,7 @@ export const feedbackConfig = {
     excellent: { min: 135, max: 170, message: "Excellent front knee angle! You're maintaining optimal form for shock absorption." },
     needsImprovement: { min: 126, max: 135, message: "Could be improved. Low running efficiency, aim for over 135 degrees." },
     bad: { min: 0, max: 126, message: "Excessive flexion. Low running efficiency and increased risk of injury. Aim for over 135 degrees." },
+    tooMuchFlexion: { min: 171, max: 200, message: "Too much flexion (knee too straight). Excessive extension reduces shock absorption and increases injury risk. Aim for 135-170 degrees." },
   },
 
   // Back Knee Angle feedback
@@ -17,6 +18,7 @@ export const feedbackConfig = {
     excellent: { min: 100, max: 116, message: "Ideal back knee angle! This indicates excellent leg recovery." },
     needsImprovement: { min: 117, max: 125, message: "Could be improved. Back knee is too open. Aim for under 116 degrees." },
     bad: { min: 125, max: 200, message: "Not enough flexion. Needs more energy to maintain speed, movement amplitude is restricted." },
+    tooMuchFlexion: { min: 0, max: 99, message: "Too much flexion (knee too bent). Excessive bending reduces leg recovery efficiency. Aim for 100-116 degrees." },
   },
 
   // Elbow Angle feedback (left and right)
@@ -48,6 +50,14 @@ export const feedbackConfig = {
     good: { min: 75, max: 90, message: "Good knee symmetry. Minor differences are normal." },
     needsImprovement: { min: 51, max: 75, message: "Your knee angles show asymmetry. Focus on balanced leg movement." },
     bad: { min: 0, max: 50, message: "Significant knee asymmetry detected. Consider working on leg strength balance." }
+  },
+
+  // Lean Position feedback (spine curvature)
+  lean: {
+    excellent: { min: 6, max: 12, message: "Excellent lean position! Your posture is optimal for running efficiency." },
+    good: { min: 13, max: 16, message: "Good lean position. You're maintaining proper forward posture." },
+    needsImprovement: { min: 3, max: 5, message: "Lean position could be improved. Aim for a more forward lean between 6-12 degrees." },
+    bad: { min: -100, max: 2, message: "Insufficient lean. Increase forward lean to improve running efficiency and reduce injury risk." }
   }
 }
 
@@ -126,6 +136,37 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
       type: 'bad',
       threshold: 'tooBackward',
       message: metricConfig.tooBackward.message,
+      value: value
+    }
+  }
+
+  // Special cases for out-of-range values
+  // Front knee: > 170 is bad (too much flexion - knee too straight)
+  if (metricType === 'frontKnee' && value > 170) {
+    return {
+      type: 'bad',
+      threshold: 'tooMuchFlexion',
+      message: metricConfig.tooMuchFlexion?.message || metricConfig.bad.message,
+      value: value
+    }
+  }
+
+  // Back knee: < 100 is bad (too much flexion - knee too bent)
+  if (metricType === 'backKnee' && value < 100) {
+    return {
+      type: 'bad',
+      threshold: 'tooMuchFlexion',
+      message: metricConfig.tooMuchFlexion?.message || metricConfig.bad.message,
+      value: value
+    }
+  }
+
+  // Lean: > 16 is bad
+  if (metricType === 'lean' && value > 16) {
+    return {
+      type: 'bad',
+      threshold: 'bad',
+      message: metricConfig.bad.message,
       value: value
     }
   }

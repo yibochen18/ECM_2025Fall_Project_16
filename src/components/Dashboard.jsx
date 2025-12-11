@@ -47,7 +47,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
   }
   
   const overallSymmetry = displayData.overallSymmetry
-  const asymmetryScore = displayData.asymmetryScore
   const runDuration = displayData.runDuration || 'N/A'
   
   // Helper function to convert real-time backend data to dashboard format
@@ -67,15 +66,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       ? (jointAngles.knee.symmetry + jointAngles.elbow.symmetry) / 2
       : 0
     
-    // Calculate asymmetry score (difference between left and right)
-    const kneeDiff = jointAngles.knee?.left && jointAngles.knee?.right
-      ? Math.abs(jointAngles.knee.left - jointAngles.knee.right)
-      : 0
-    const elbowDiff = jointAngles.elbow?.left && jointAngles.elbow?.right
-      ? Math.abs(jointAngles.elbow.left - jointAngles.elbow.right)
-      : 0
-    const asymmetryScore = (kneeDiff + elbowDiff) / 2
-    
     // Convert to formAnalysis format
     const frontKneeAngle = jointAngles.frontKnee?.angle || 0
     const backKneeAngle = jointAngles.backKnee?.angle || 0
@@ -83,7 +73,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     const formAnalysis = {
       backPosition: {
-        forwardLean: Math.abs(jointAngles.backToHead?.angle || 0),
+        forwardLean: jointAngles.backToHead?.spineCurvature || 0, // Use spineCurvature (lean) instead of angle
         symmetry: 90, // Default, not available from backend
         status: 'N/A' // Status determined by feedbackConfig in render
       },
@@ -104,11 +94,10 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     return {
       overallSymmetry: Math.round(overallSymmetry),
-      asymmetryScore: asymmetryScore,
-      runDuration: 'N/A', // MISSING: Not provided by backend
+      runDuration: 'N/A', // MISSING: Not provided by backend at the moment
       jointAngles: jointAngles,
       formAnalysis: formAnalysis,
-      recommendations: generateRecommendations(jointAngles, overallSymmetry, asymmetryScore)
+      recommendations: generateRecommendations(jointAngles, overallSymmetry)
     }
   }
   
@@ -118,11 +107,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     // Calculate overall symmetry as average of knee and elbow symmetry
     const overallSymmetry = (jointAngles.knee.symmetry + jointAngles.elbow.symmetry) / 2
-    
-    // Calculate asymmetry score (difference between left and right)
-    const kneeDiff = Math.abs(jointAngles.knee.left - jointAngles.knee.right)
-    const elbowDiff = Math.abs(jointAngles.elbow.left - jointAngles.elbow.right)
-    const asymmetryScore = (kneeDiff + elbowDiff) / 2
     
     // Estimate duration from totalFrames (assuming ~30fps)
     const estimatedDuration = avgData.totalFrames ? `${Math.floor(avgData.totalFrames / 30 / 60)}:${String(Math.floor((avgData.totalFrames / 30) % 60)).padStart(2, '0')}` : 'N/A'
@@ -134,7 +118,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     const formAnalysis = {
       backPosition: {
-        forwardLean: Math.abs(jointAngles.backToHead.angle),
+        forwardLean: jointAngles.backToHead.spineCurvature || 0, // Use spineCurvature (lean) instead of angle
         symmetry: 90,
         status: 'N/A' // Status determined by feedbackConfig in render
       },
@@ -155,16 +139,15 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     return {
       overallSymmetry: Math.round(overallSymmetry),
-      asymmetryScore: asymmetryScore,
       runDuration: estimatedDuration,
       jointAngles: jointAngles,
       formAnalysis: formAnalysis,
-      recommendations: generateRecommendations(jointAngles, overallSymmetry, asymmetryScore)
+      recommendations: generateRecommendations(jointAngles, overallSymmetry)
     }
   }
   
   // Generate recommendations based on session data
-  function generateRecommendations(jointAngles, overallSymmetry, asymmetryScore) {
+  function generateRecommendations(jointAngles, overallSymmetry) {
     const recommendations = []
     
     if (overallSymmetry < 75) {
@@ -201,6 +184,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     if (threshold === 'bad') return 'needs-improvement' // Bad is red
     if (threshold === 'tooForward') return 'needs-improvement' // Too forward is red
     if (threshold === 'tooBackward') return 'needs-improvement' // Too backward is red
+    if (threshold === 'tooMuchFlexion') return 'needs-improvement' // Too much flexion is red
     return 'needs-improvement'
   }
 
@@ -212,6 +196,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     if (threshold === 'bad') return 'Bad' // Bad has its own label
     if (threshold === 'tooForward') return 'Too Forward' // Too Forward has its own label
     if (threshold === 'tooBackward') return 'Too Backward' // Too Backward has its own label
+    if (threshold === 'tooMuchFlexion') return 'Too Much Flexion' // Too Much Flexion has its own label
     return 'Needs Improvement'
   }
 
@@ -265,18 +250,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
 
         <div className="metric-card">
           <div className="metric-header">
-            <h3>Asymmetry Score</h3>
-          </div>
-          <div className={`metric-value ${getSymmetryClass(100 - asymmetryScore)}`}>
-            {asymmetryScore.toFixed(1)}%
-          </div>
-          <p className="metric-description">
-            Lower is better. Measures overall form deviation.
-          </p>
-        </div>
-
-        <div className="metric-card">
-          <div className="metric-header">
             <h3>Knee Angle Symmetry</h3>
           </div>
           <div className={`metric-value ${getSymmetryClass(displayData.jointAngles.knee.symmetry)}`}>
@@ -310,7 +283,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
             {displayData.jointAngles.backToHead.angle.toFixed(1)}°
           </div>
           <p className="metric-description">
-            Spine curvature: {displayData.jointAngles.backToHead.spineCurvature.toFixed(1)}°
+            Lean: {displayData.jointAngles.backToHead.spineCurvature.toFixed(1)}°
           </p>
         </div>
 
@@ -319,15 +292,15 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Back Position</h3>
-                <span className={`metric-label ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
-                  {getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).label}
+                <span className={`metric-label ${getAngleStatus('lean', displayData.jointAngles.backToHead.spineCurvature).class}`}>
+                  {getAngleStatus('lean', displayData.jointAngles.backToHead.spineCurvature).label}
                 </span>
               </div>
-              <div className={`metric-value ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
-                {displayData.formAnalysis.backPosition.forwardLean.toFixed(1)}°
+              <div className={`metric-value ${getAngleStatus('lean', displayData.jointAngles.backToHead.spineCurvature).class}`}>
+                {displayData.jointAngles.backToHead.spineCurvature.toFixed(1)}°
               </div>
               <p className="metric-description">
-                Forward lean: {displayData.formAnalysis.backPosition.forwardLean.toFixed(1)}°
+                Lean: {displayData.jointAngles.backToHead.spineCurvature.toFixed(1)}°
               </p>
             </div>
 
