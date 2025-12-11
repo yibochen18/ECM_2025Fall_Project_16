@@ -89,21 +89,18 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       },
       kneeAnglesAtLanding: {
         frontKnee: {
-          left: frontKneeAngle,
-          right: frontKneeAngle, // Using same value, backend doesn't provide left/right for front/back
+          angle: frontKneeAngle, // Average front knee angle
           symmetry: kneeSymmetry
         },
         backKnee: {
-          left: backKneeAngle,
-          right: backKneeAngle, // Using same value, backend doesn't provide left/right for front/back
+          angle: backKneeAngle, // Average back knee angle
           symmetry: kneeSymmetry
         }
       },
       armsPosition: {
         leftAngle: jointAngles.elbow?.left || 0,
         rightAngle: jointAngles.elbow?.right || 0,
-        symmetry: jointAngles.elbow?.symmetry || 0,
-        swingSymmetry: jointAngles.elbow?.symmetry || 0 // Using elbow symmetry as proxy
+        symmetry: jointAngles.elbow?.symmetry || 0
       }
     }
     
@@ -145,21 +142,18 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       },
       kneeAnglesAtLanding: {
         frontKnee: {
-          left: frontKneeAvg,
-          right: frontKneeAvg,
+          angle: frontKneeAvg, // Average front knee angle
           symmetry: kneeSymmetry
         },
         backKnee: {
-          left: backKneeAvg,
-          right: backKneeAvg,
+          angle: backKneeAvg, // Average back knee angle
           symmetry: kneeSymmetry
         }
       },
       armsPosition: {
         leftAngle: jointAngles.elbow.left,
         rightAngle: jointAngles.elbow.right,
-        symmetry: jointAngles.elbow.symmetry,
-        swingSymmetry: jointAngles.elbow.symmetry
+        symmetry: jointAngles.elbow.symmetry
       }
     }
     
@@ -382,7 +376,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
                 {displayData.formAnalysis.armsPosition.symmetry}%
               </div>
               <p className="metric-description">
-                Left: {displayData.jointAngles.elbow.left.toFixed(1)}° | Right: {displayData.jointAngles.elbow.right.toFixed(1)}° | Swing: {displayData.formAnalysis.armsPosition.swingSymmetry}%
+                Left: {displayData.jointAngles.elbow.left.toFixed(1)}° | Right: {displayData.jointAngles.elbow.right.toFixed(1)}°
               </p>
             </div>
           </>

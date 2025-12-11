@@ -26,19 +26,17 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
     forwardLean: safeNumber(backToHead.angle),
     status: 'Good',
     symmetry: safeNumber(knee.symmetry, 0),
-    recommendation: 'Maintain slight forward lean (6-8°) for optimal running efficiency.',
   }
 
+  // Front/back knee angles are averages from the session
   const kneeAnglesAtLanding = {
     frontKnee: {
-      left: safeNumber(frontKnee.left ?? frontKnee.angle),
-      right: safeNumber(frontKnee.right ?? frontKnee.angle),
-      symmetry: safeNumber(frontKnee.symmetry ?? knee.symmetry, 0),
+      angle: safeNumber(frontKnee.angle), // Average front knee angle
+      symmetry: safeNumber(knee.symmetry, 0), // Left/right knee symmetry
     },
     backKnee: {
-      left: safeNumber(backKnee.left ?? backKnee.angle),
-      right: safeNumber(backKnee.right ?? backKnee.angle),
-      symmetry: safeNumber(backKnee.symmetry ?? knee.symmetry, 0),
+      angle: safeNumber(backKnee.angle), // Average back knee angle
+      symmetry: safeNumber(knee.symmetry, 0), // Left/right knee symmetry
     },
   }
 
@@ -46,14 +44,10 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
     leftAngle: safeNumber(elbow.left ?? elbow.angle),
     rightAngle: safeNumber(elbow.right ?? elbow.angle),
     symmetry: safeNumber(elbow.symmetry, 0),
-    swingSymmetry: safeNumber(elbow.symmetry, 0),
-    recommendation: 'Keep arms at 85–90° angle, avoiding cross-body swing.',
   }
 
   const headPosition = {
     tilt: safeNumber(backToHead.tilt ?? backToHead.angle, 0),
-    symmetry: safeNumber(backToHead.symmetry ?? knee.symmetry, 0),
-    recommendation: 'Keep head neutral, eyes looking 10–20m ahead.',
   }
 
   return {
@@ -173,9 +167,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            {formAnalysis.backPosition.recommendation && (
-              <p className="metric-tip">{formAnalysis.backPosition.recommendation}</p>
-            )}
           </div>
         </div>
 
@@ -183,23 +174,14 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
         <div className="form-metric-card">
           <h3>Front Knee Angle at Landing</h3>
           <div className="metric-content">
-            <div className="angle-comparison">
-              <div className="angle-display">
-                <div className="angle-label">Left</div>
-                <div className="angle-value">
-                  {formAnalysis.kneeAnglesAtLanding.frontKnee.left.toFixed(1)}°
-                </div>
+            <div className="position-display">
+              <div className="position-value">
+                {formAnalysis.kneeAnglesAtLanding.frontKnee.angle.toFixed(1)}°
               </div>
-              <div className="angle-separator">vs</div>
-              <div className="angle-display">
-                <div className="angle-label">Right</div>
-                <div className="angle-value">
-                  {formAnalysis.kneeAnglesAtLanding.frontKnee.right.toFixed(1)}°
-                </div>
-              </div>
+              <div className="position-label">Average Front Knee Angle</div>
             </div>
             <div className="symmetry-indicator">
-              <span>Symmetry: {formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%</span>
+              <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%</span>
               <div className="symmetry-bar">
                 <div 
                   className={`symmetry-fill ${getSymmetryClass(formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry)}`}
@@ -207,7 +189,7 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            <p className="metric-tip">Optimal: 160-165° for efficient shock absorption</p>
+            <p className="metric-tip">Optimal: 135-170° for efficient shock absorption</p>
           </div>
         </div>
 
@@ -215,23 +197,14 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
         <div className="form-metric-card">
           <h3>Back Knee Angle at Landing</h3>
           <div className="metric-content">
-            <div className="angle-comparison">
-              <div className="angle-display">
-                <div className="angle-label">Left</div>
-                <div className="angle-value">
-                  {formAnalysis.kneeAnglesAtLanding.backKnee.left.toFixed(1)}°
-                </div>
+            <div className="position-display">
+              <div className="position-value">
+                {formAnalysis.kneeAnglesAtLanding.backKnee.angle.toFixed(1)}°
               </div>
-              <div className="angle-separator">vs</div>
-              <div className="angle-display">
-                <div className="angle-label">Right</div>
-                <div className="angle-value">
-                  {formAnalysis.kneeAnglesAtLanding.backKnee.right.toFixed(1)}°
-                </div>
-              </div>
+              <div className="position-label">Average Back Knee Angle</div>
             </div>
             <div className="symmetry-indicator">
-              <span>Symmetry: {formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%</span>
+              <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%</span>
               <div className="symmetry-bar">
                 <div 
                   className={`symmetry-fill ${getSymmetryClass(formAnalysis.kneeAnglesAtLanding.backKnee.symmetry)}`}
@@ -239,7 +212,7 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            <p className="metric-tip">Optimal: 25-35° for proper leg recovery</p>
+            <p className="metric-tip">Optimal: 100-116° for proper leg recovery</p>
           </div>
         </div>
 
@@ -271,18 +244,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 />
               </div>
             </div>
-            <div className="symmetry-indicator symmetry-indicator-spaced">
-              <span>Swing Symmetry: {formAnalysis.armsPosition.swingSymmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.armsPosition.swingSymmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.armsPosition.swingSymmetry}%` }}
-                />
-              </div>
-            </div>
-            {formAnalysis.armsPosition.recommendation && (
-              <p className="metric-tip">{formAnalysis.armsPosition.recommendation}</p>
-            )}
           </div>
         </div>
 
@@ -298,18 +259,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 </div>
               </div>
             </div>
-            <div className="symmetry-indicator">
-              <span>Symmetry: {formAnalysis.headPosition.symmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.headPosition.symmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.headPosition.symmetry}%` }}
-                />
-              </div>
-            </div>
-            {formAnalysis.headPosition.recommendation && (
-              <p className="metric-tip">{formAnalysis.headPosition.recommendation}</p>
-            )}
           </div>
         </div>
       </div>
