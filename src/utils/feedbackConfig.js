@@ -74,9 +74,11 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
   }
 
   // Priority order: excellent > good > needsImprovement > bad > tooForward/tooBackward
+  // Return the threshold name directly (matches feedbackConfig keys)
   if (checkRange('excellent')) {
     return {
-      type: 'success',
+      type: 'excellent',
+      threshold: 'excellent',
       message: metricConfig.excellent.message,
       value: value
     }
@@ -84,7 +86,8 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
 
   if (checkRange('good')) {
     return {
-      type: 'info',
+      type: 'good',
+      threshold: 'good',
       message: metricConfig.good.message,
       value: value
     }
@@ -92,7 +95,8 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
 
   if (checkRange('needsImprovement')) {
     return {
-      type: 'warning',
+      type: 'needsImprovement',
+      threshold: 'needsImprovement',
       message: metricConfig.needsImprovement.message,
       value: value
     }
@@ -100,7 +104,8 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
 
   if (checkRange('bad')) {
     return {
-      type: 'error',
+      type: 'bad',
+      threshold: 'bad',
       message: metricConfig.bad.message,
       value: value
     }
@@ -109,7 +114,8 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
   // Special cases for backToHead
   if (checkRange('tooForward')) {
     return {
-      type: 'error',
+      type: 'bad',
+      threshold: 'tooForward',
       message: metricConfig.tooForward.message,
       value: value
     }
@@ -117,13 +123,14 @@ export function getFeedbackForMetric(metricType, value, config = feedbackConfig)
 
   if (checkRange('tooBackward')) {
     return {
-      type: 'error',
+      type: 'bad',
+      threshold: 'tooBackward',
       message: metricConfig.tooBackward.message,
       value: value
     }
   }
 
-  return { type: 'info', message: 'No specific feedback available', value: value }
+  return { type: 'needsImprovement', threshold: 'needsImprovement', message: 'No specific feedback available', value: value }
 }
 
 /**
@@ -141,17 +148,17 @@ export function getAsymmetryFeedback(metricType, value, config = feedbackConfig)
 
   // For symmetry percentages (higher is better)
   if (metricType === 'kneeSymmetry') {
-    if (value >= 90) return { type: 'success', message: asymmetryConfig.excellent.message, value }
-    if (value >= 75) return { type: 'info', message: asymmetryConfig.good.message, value }
-    if (value >= 50) return { type: 'warning', message: asymmetryConfig.needsImprovement.message, value }
-    return { type: 'error', message: asymmetryConfig.bad.message, value }
+    if (value >= 90) return { type: 'excellent', threshold: 'excellent', message: asymmetryConfig.excellent.message, value }
+    if (value >= 75) return { type: 'good', threshold: 'good', message: asymmetryConfig.good.message, value }
+    if (value >= 50) return { type: 'needsImprovement', threshold: 'needsImprovement', message: asymmetryConfig.needsImprovement.message, value }
+    return { type: 'bad', threshold: 'bad', message: asymmetryConfig.bad.message, value }
   }
 
   // For difference values (lower is better)
   const diffConfig = asymmetryConfig
-  if (value <= diffConfig.excellent.max) return { type: 'success', message: diffConfig.excellent.message, value }
-  if (value <= diffConfig.good.max) return { type: 'info', message: diffConfig.good.message, value }
-  if (value <= diffConfig.needsImprovement.max) return { type: 'warning', message: diffConfig.needsImprovement.message, value }
-  return { type: 'error', message: diffConfig.bad.message, value }
+  if (value <= diffConfig.excellent.max) return { type: 'excellent', threshold: 'excellent', message: diffConfig.excellent.message, value }
+  if (value <= diffConfig.good.max) return { type: 'good', threshold: 'good', message: diffConfig.good.message, value }
+  if (value <= diffConfig.needsImprovement.max) return { type: 'needsImprovement', threshold: 'needsImprovement', message: diffConfig.needsImprovement.message, value }
+  return { type: 'bad', threshold: 'bad', message: diffConfig.bad.message, value }
 }
 

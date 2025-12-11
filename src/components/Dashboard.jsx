@@ -1,5 +1,6 @@
 import React from 'react'
 import './Dashboard.css'
+import { getFeedbackForMetric, getAsymmetryFeedback } from '../utils/feedbackConfig'
 
 /**
  * Dashboard Component
@@ -49,8 +50,8 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
   
   const overallSymmetry = displayData.overallSymmetry
   const asymmetryScore = displayData.asymmetryScore
-  const runDuration = displayData.runDuration
-  const totalSteps = displayData.totalSteps
+  const runDuration = displayData.runDuration || 'N/A'
+  const totalSteps = displayData.totalSteps || 'N/A'
   
   // Helper function to convert real-time backend data to dashboard format
   function convertRealTimeDataToDashboardFormat(rtData) {
@@ -87,7 +88,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       backPosition: {
         forwardLean: Math.abs(jointAngles.backToHead?.angle || 0),
         symmetry: 90, // Default, not available from backend
-        status: Math.abs(jointAngles.backToHead?.angle || 0) < 10 ? 'Good' : 'Warning'
+        status: 'N/A' // Status determined by feedbackConfig in render
       },
       kneeAnglesAtLanding: {
         frontKnee: {
@@ -134,7 +135,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     // Estimate duration and steps from totalFrames (assuming ~30fps)
     const estimatedDuration = avgData.totalFrames ? `${Math.floor(avgData.totalFrames / 30 / 60)}:${String(Math.floor((avgData.totalFrames / 30) % 60)).padStart(2, '0')}` : 'N/A'
-    const estimatedSteps = avgData.totalFrames ? Math.floor(avgData.totalFrames / 30) : 'N/A'
+    // const estimatedSteps = avgData.totalFrames ? Math.floor(avgData.totalFrames / 30) : 'N/A'
     
     // Convert to formAnalysis format
     const frontKneeAvg = jointAngles.frontKnee.angle
@@ -145,7 +146,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       backPosition: {
         forwardLean: Math.abs(jointAngles.backToHead.angle),
         symmetry: 90,
-        status: Math.abs(jointAngles.backToHead.angle) < 10 ? 'Good' : 'Warning'
+        status: 'N/A' // Status determined by feedbackConfig in render
       },
       kneeAnglesAtLanding: {
         frontKnee: {
@@ -205,18 +206,49 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     return recommendations
   }
 
-  const getSymmetryClass = (score) => {
-    if (score >= 90) return 'excellent'
-    if (score >= 75) return 'good'
-    if (score >= 60) return 'fair'
+  // Get status class from feedbackConfig thresholds
+  // Map feedbackConfig threshold names to CSS classes
+  // CSS supports: excellent (green), good (yellow), fair (orange), needs-improvement (red)
+  const getStatusClass = (threshold) => {
+    if (!threshold) return 'needs-improvement'
+    if (threshold === 'excellent') return 'excellent'
+    if (threshold === 'good') return 'good'
+    if (threshold === 'needsImprovement') return 'needs-improvement'
+    if (threshold === 'bad') return 'needs-improvement' // Bad is red
+    if (threshold === 'tooForward') return 'needs-improvement' // Too forward is red
+    if (threshold === 'tooBackward') return 'needs-improvement' // Too backward is red
     return 'needs-improvement'
   }
 
-  const getSymmetryLabel = (score) => {
-    if (score >= 90) return 'Excellent'
-    if (score >= 75) return 'Good'
-    if (score >= 60) return 'Fair'
+  const getStatusLabel = (threshold) => {
+    if (!threshold) return 'Needs Improvement'
+    if (threshold === 'excellent') return 'Excellent'
+    if (threshold === 'good') return 'Good'
+    if (threshold === 'needsImprovement') return 'Needs Improvement'
+    if (threshold === 'bad') return 'Bad' // Bad has its own label
+    if (threshold === 'tooForward') return 'Too Forward' // Too Forward has its own label
+    if (threshold === 'tooBackward') return 'Too Backward' // Too Backward has its own label
     return 'Needs Improvement'
+  }
+
+  // Legacy function for symmetry scores (uses feedbackConfig kneeSymmetry thresholds)
+  const getSymmetryClass = (score) => {
+    const feedback = getAsymmetryFeedback('kneeSymmetry', score)
+    return getStatusClass(feedback.threshold || feedback.type)
+  }
+
+  const getSymmetryLabel = (score) => {
+    const feedback = getAsymmetryFeedback('kneeSymmetry', score)
+    return getStatusLabel(feedback.threshold || feedback.type)
+  }
+
+  // Get status for angle-based metrics using feedbackConfig
+  const getAngleStatus = (metricType, angle) => {
+    const feedback = getFeedbackForMetric(metricType, angle)
+    return {
+      class: getStatusClass(feedback.threshold || feedback.type),
+      label: getStatusLabel(feedback.threshold || feedback.type)
+    }
   }
 
   return (
@@ -287,8 +319,11 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
         <div className="metric-card">
           <div className="metric-header">
             <h3>Back to Head Tilt</h3>
+            <span className={`metric-label ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
+              {getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).label}
+            </span>
           </div>
-          <div className={`metric-value ${getSymmetryClass(100 - Math.abs(displayData.jointAngles.backToHead.angle))}`}>
+          <div className={`metric-value ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
             {displayData.jointAngles.backToHead.angle.toFixed(1)}°
           </div>
           <p className="metric-description">
@@ -301,48 +336,60 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Back Position</h3>
+                <span className={`metric-label ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
+                  {getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).label}
+                </span>
               </div>
-              <div className={`metric-value ${getSymmetryClass(displayData.formAnalysis.backPosition.symmetry)}`}>
+              <div className={`metric-value ${getAngleStatus('backToHead', displayData.jointAngles.backToHead.angle).class}`}>
                 {displayData.formAnalysis.backPosition.forwardLean.toFixed(1)}°
               </div>
               <p className="metric-description">
-                Forward lean: {displayData.formAnalysis.backPosition.forwardLean.toFixed(1)}° ({displayData.formAnalysis.backPosition.status})
+                Forward lean: {displayData.formAnalysis.backPosition.forwardLean.toFixed(1)}°
               </p>
             </div>
 
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Front Knee</h3>
+                <span className={`metric-label ${getAngleStatus('frontKnee', displayData.jointAngles.frontKnee.angle).class}`}>
+                  {getAngleStatus('frontKnee', displayData.jointAngles.frontKnee.angle).label}
+                </span>
               </div>
-              <div className={`metric-value ${getSymmetryClass(displayData.formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry)}`}>
-                {displayData.formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%
+              <div className={`metric-value ${getAngleStatus('frontKnee', displayData.jointAngles.frontKnee.angle).class}`}>
+                {displayData.jointAngles.frontKnee.angle.toFixed(1)}°
               </div>
               <p className="metric-description">
-                Left: {displayData.formAnalysis.kneeAnglesAtLanding.frontKnee.left.toFixed(1)}° | Right: {displayData.formAnalysis.kneeAnglesAtLanding.frontKnee.right.toFixed(1)}°
+                Symmetry: {displayData.formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}% | Range: {displayData.jointAngles.frontKnee.min?.toFixed(1) || 'N/A'}° - {displayData.jointAngles.frontKnee.max?.toFixed(1) || 'N/A'}°
               </p>
             </div>
 
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Back Knee</h3>
+                <span className={`metric-label ${getAngleStatus('backKnee', displayData.jointAngles.backKnee.angle).class}`}>
+                  {getAngleStatus('backKnee', displayData.jointAngles.backKnee.angle).label}
+                </span>
               </div>
-              <div className={`metric-value ${getSymmetryClass(displayData.formAnalysis.kneeAnglesAtLanding.backKnee.symmetry)}`}>
-                {displayData.formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%
+              <div className={`metric-value ${getAngleStatus('backKnee', displayData.jointAngles.backKnee.angle).class}`}>
+                {displayData.jointAngles.backKnee.angle.toFixed(1)}°
               </div>
               <p className="metric-description">
-                Left: {displayData.formAnalysis.kneeAnglesAtLanding.backKnee.left.toFixed(1)}° | Right: {displayData.formAnalysis.kneeAnglesAtLanding.backKnee.right.toFixed(1)}°
+                Symmetry: {displayData.formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}% | Range: {displayData.jointAngles.backKnee.min?.toFixed(1) || 'N/A'}° - {displayData.jointAngles.backKnee.max?.toFixed(1) || 'N/A'}°
               </p>
             </div>
 
             <div className="metric-card">
               <div className="metric-header">
                 <h3>Arms Position</h3>
+                <span className={`metric-label ${getSymmetryClass(displayData.formAnalysis.armsPosition.symmetry)}`}>
+                  {getSymmetryLabel(displayData.formAnalysis.armsPosition.symmetry)}
+                </span>
               </div>
               <div className={`metric-value ${getSymmetryClass(displayData.formAnalysis.armsPosition.symmetry)}`}>
                 {displayData.formAnalysis.armsPosition.symmetry}%
               </div>
               <p className="metric-description">
-                Angle symmetry: {displayData.formAnalysis.armsPosition.symmetry}% | Swing: {displayData.formAnalysis.armsPosition.swingSymmetry}%
+                Left: {displayData.jointAngles.elbow.left.toFixed(1)}° | Right: {displayData.jointAngles.elbow.right.toFixed(1)}° | Swing: {displayData.formAnalysis.armsPosition.swingSymmetry}%
               </p>
             </div>
           </>
