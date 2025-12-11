@@ -28,12 +28,20 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
   
   // Generate feedback based on session averages
   const getSessionBasedFeedback = () => {
-    if (!sessionAverages || !sessionAverages.jointAngles) {
+    if (!sessionAverages) {
+      return []
+    }
+
+    // Support both shapes:
+    // 1) sessionAverages = { jointAngles: { ... }, ... }
+    // 2) sessionAverages = { frontKnee, backKnee, elbow, backToHead, knee, ... }
+    const ja = sessionAverages.jointAngles || sessionAverages
+
+    if (!ja) {
       return []
     }
     
     const feedback = []
-    const ja = sessionAverages.jointAngles
     
     // Front Knee feedback
     if (ja.frontKnee && ja.frontKnee.angle !== undefined) {
@@ -41,7 +49,9 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
       feedback.push({
         metric: 'Front Knee',
         value: `${ja.frontKnee.angle.toFixed(1)}°`,
-        range: `${ja.frontKnee.min.toFixed(1)}° - ${ja.frontKnee.max.toFixed(1)}°`,
+        range: (ja.frontKnee.min !== undefined && ja.frontKnee.max !== undefined)
+          ? `${ja.frontKnee.min.toFixed(1)}° - ${ja.frontKnee.max.toFixed(1)}°`
+          : undefined,
         ...frontKneeFeedback
       })
     }
@@ -52,7 +62,9 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
       feedback.push({
         metric: 'Back Knee',
         value: `${ja.backKnee.angle.toFixed(1)}°`,
-        range: `${ja.backKnee.min.toFixed(1)}° - ${ja.backKnee.max.toFixed(1)}°`,
+        range: (ja.backKnee.min !== undefined && ja.backKnee.max !== undefined)
+          ? `${ja.backKnee.min.toFixed(1)}° - ${ja.backKnee.max.toFixed(1)}°`
+          : undefined,
         ...backKneeFeedback
       })
     }

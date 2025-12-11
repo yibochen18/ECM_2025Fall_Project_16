@@ -37,12 +37,17 @@ function App() {
 
         // Expect backend message to match live joint-angle sample shape
         // { frontKnee, backKnee, backToHead, elbow, knee }
-        // Check if backend includes session averages in the response
+        // or a one-time session summary shaped like:
+        // { jointAngles: { ... }, totalFrames, sessionEndTime }
+        // Detect and store session averages when present.
         if (message.sessionAverages || message.averages) {
           setSessionAverages(message.sessionAverages || message.averages)
+        } else if (message.jointAngles && message.totalFrames) {
+          // End-of-session summary without wrapper key
+          setSessionAverages(message)
         }
         
-        // Extract just the real-time data (without averages)
+        // Extract just the real-time data (without explicit averages keys)
         const { sessionAverages: _, averages: __, ...realtimeOnly } = message
         setRealTimeData(realtimeOnly)
 

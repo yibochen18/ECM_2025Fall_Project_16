@@ -1,15 +1,91 @@
 import React from 'react'
 import './FormAnalysis.css'
 
+// Convert session-level averages into the formAnalysis structure
+// expected by the UI below. This keeps the component logic simple
+// and makes it easy to adjust mappings later.
+function convertSessionAveragesToFormAnalysis(sessionAverages) {
+  if (!sessionAverages) {
+    return null
+  }
+
+  const ja = sessionAverages.jointAngles || sessionAverages
+
+  // Safely read helper to avoid lots of repeated optional chaining.
+  const safeNumber = (value, fallback = 0) => (
+    typeof value === 'number' ? value : fallback
+  )
+
+  const backToHead = ja.backToHead || {}
+  const frontKnee = ja.frontKnee || {}
+  const backKnee = ja.backKnee || {}
+  const elbow = ja.elbow || {}
+  const knee = ja.knee || {}
+
+  const backPosition = {
+    forwardLean: safeNumber(backToHead.angle),
+    status: 'Good',
+    symmetry: safeNumber(knee.symmetry, 0),
+    recommendation: 'Maintain slight forward lean (6-8°) for optimal running efficiency.',
+  }
+
+  const kneeAnglesAtLanding = {
+    frontKnee: {
+      left: safeNumber(frontKnee.left ?? frontKnee.angle),
+      right: safeNumber(frontKnee.right ?? frontKnee.angle),
+      symmetry: safeNumber(frontKnee.symmetry ?? knee.symmetry, 0),
+    },
+    backKnee: {
+      left: safeNumber(backKnee.left ?? backKnee.angle),
+      right: safeNumber(backKnee.right ?? backKnee.angle),
+      symmetry: safeNumber(backKnee.symmetry ?? knee.symmetry, 0),
+    },
+  }
+
+  const armsPosition = {
+    leftAngle: safeNumber(elbow.left ?? elbow.angle),
+    rightAngle: safeNumber(elbow.right ?? elbow.angle),
+    symmetry: safeNumber(elbow.symmetry, 0),
+    swingSymmetry: safeNumber(elbow.symmetry, 0),
+    recommendation: 'Keep arms at 85–90° angle, avoiding cross-body swing.',
+  }
+
+  const headPosition = {
+    tilt: safeNumber(backToHead.tilt ?? backToHead.angle, 0),
+    forwardPosition: safeNumber(backToHead.forwardPosition, 0),
+    symmetry: safeNumber(backToHead.symmetry ?? knee.symmetry, 0),
+    recommendation: 'Keep head neutral, eyes looking 10–20m ahead.',
+  }
+
+  return {
+    backPosition,
+    kneeAnglesAtLanding,
+    armsPosition,
+    headPosition,
+  }
+}
+
 function FormAnalysis({ data, realTimeData, sessionAverages }) {
-  // Use session averages if available, otherwise use regular data
-  const displayData = sessionAverages ? {
-    jointAngles: sessionAverages.jointAngles,
-    formAnalysis: convertSessionAveragesToFormAnalysis(sessionAverages)
-  } : (realTimeData || data)
+  const baseData = realTimeData || data || null
+
+  let formAnalysis = null
+
+  if (sessionAverages) {
+    formAnalysis = convertSessionAveragesToFormAnalysis(sessionAverages)
+  } else if (baseData && baseData.formAnalysis) {
+    formAnalysis = baseData.formAnalysis
+  } else if (baseData && baseData.jointAngles) {
+    // Shape like { jointAngles: { ... } }
+    formAnalysis = convertSessionAveragesToFormAnalysis({ jointAngles: baseData.jointAngles })
+  } else if (baseData && (baseData.frontKnee || baseData.backKnee || baseData.elbow || baseData.backToHead || baseData.knee)) {
+    // Live frame shape from backend: { frontKnee, backKnee, backToHead, elbow, knee }
+    formAnalysis = convertSessionAveragesToFormAnalysis(baseData)
+  }
+
+  const displayData = baseData || (sessionAverages ? { jointAngles: sessionAverages.jointAngles } : null)
   
   // Handle no data case
-  if (!displayData) {
+  if (!displayData && !formAnalysis) {
     return (
       <div className="form-analysis">
         <div className="section-header">
@@ -25,8 +101,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
     )
   }
   
-  const formAnalysis = displayData.formAnalysis
-
   if (!formAnalysis) {
     return (
       <div className="form-analysis">
