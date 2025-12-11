@@ -25,47 +25,48 @@ function App() {
       return
     }
 
-    const socket = new WebSocket('ws://localhost:4000/joint-angles')
+    let isCancelled = false
 
-    socket.onopen = () => {
-      console.log('WebSocket connected')
-      // Optionally send a message to start streaming from the backend
-      // socket.send(JSON.stringify({ type: 'START_STREAM' }))
-    }
-
-    socket.onmessage = (event) => {
+    const poll = async () => {
       try {
-        const message = JSON.parse(event.data)
-        // Expect backend message to match simulateRealTimeData() shape
+        const response = await fetch('http://localhost:4000/joint-angles')
+        if (!response.ok) {
+          console.error('HTTP error fetching joint angles', response.status)
+          return
+        }
+
+        const message = await response.json()
+
+        if (isCancelled) return
+
+        // Expect backend message to match live joint-angle sample shape
+        // { frontKnee, backKnee, backToHead, elbow, knee }
         setRealTimeData(message)
 
-        // Accumulate real-time frames into a timeSeriesData-style array
+        // Accumulate real-time frames into an array where each point
+        // has the same shape as the incoming message. JointAngles
+        // will compute the time axis from the index.
         setRealTimeSeries((prev) => {
           const next = [
             ...prev,
-            {
-              timestamp: prev.length,
-              jointAngles: message.jointAngles,
-            },
+            message,
           ]
           // Keep a rolling window of the most recent 300 points
           return next.slice(-300)
         })
       } catch (error) {
-        console.error('Failed to parse joint angle message', error)
+        console.error('Failed to fetch joint angle message', error)
       }
     }
 
-    socket.onerror = (error) => {
-      console.error('WebSocket error', error)
-    }
+    const intervalId = setInterval(poll, 200)
 
-    socket.onclose = () => {
-      console.log('WebSocket disconnected')
-    }
+    // Kick off immediately instead of waiting for first interval
+    poll()
 
     return () => {
-      socket.close()
+      isCancelled = true
+      clearInterval(intervalId)
     }
   }, [isRealTime])
 

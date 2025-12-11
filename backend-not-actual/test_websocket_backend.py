@@ -5,6 +5,10 @@ from datetime import datetime
 from aiohttp import web
 
 
+# Cache for the most recently received live frame from the external backend.
+_latest_live_frame = None
+
+
 def calculate_symmetry(left: float, right: float) -> int:
     diff = abs(left - right)
     avg = (left + right) / 2 if (left + right) != 0 else 1.0
@@ -139,15 +143,90 @@ def compute_joint_metrics_once() -> dict:
     return metrics
 
 async def joint_angles_handler(request):
+    """Handle POST /joint-angles by echoing and caching the received JSON body.
+
+    The external backend sends frames shaped like:
+
+        {
+            "frontKnee": {"angle": ..., "side": "right"},
+            "backKnee": {"angle": ..., "side": "left"},
+            "backToHead": {"angle": ..., "spineCurvature": ...},
+            "elbow": {"left": ..., "right": ..., "symmetry": ...},
+            "knee": {"left": ..., "right": ..., "symmetry": ...},
+        }
+
+    We cache this so GET /joint-angles can serve the most recent live frame
+    to the frontend's HTTP polling.
+    """
+    global _latest_live_frame
+
     data = await request.json()
     print("Received message:", data)
 
+    # Cache the most recent frame
+    _latest_live_frame = data
+
     # Echo back the data
-    return web.json_response(data)
+    return web.json_response(data, headers={"Access-Control-Allow-Origin": "*"})
+
+
+async def joint_angles_get_handler(request):
+    """Handle GET /joint-angles by returning the most recent live frame.
+
+    If an external backend has POSTed a frame to /joint-angles, we return
+    that exact JSON so the frontend sees the real incoming data. If no live
+    frame has been received yet, we fall back to synthesizing a frame from
+    compute_joint_metrics_once(), converted into the same shape.
+    """
+    global _latest_live_frame
+
+    if _latest_live_frame is not None:
+        return web.json_response(_latest_live_frame, headers={"Access-Control-Allow-Origin": "*"})
+
+    # Fallback: generate a synthetic frame in the same shape
+    metrics = compute_joint_metrics_once()
+
+    knee_metrics = metrics["jointAngles"]["knee"]
+    knee_left = knee_metrics["left"]
+    knee_right = knee_metrics["right"]
+    knee_symmetry = knee_metrics["symmetry"]
+
+    arms = metrics["formAnalysis"]["armsPosition"]
+    head = metrics["formAnalysis"]["headPosition"]
+    back = metrics["formAnalysis"]["backPosition"]
+
+    elbow_left = arms["leftAngle"]
+    elbow_right = arms["rightAngle"]
+    elbow_symmetry = calculate_symmetry(elbow_left, elbow_right)
+
+    back_to_head_angle = head["tilt"]
+    spine_curvature = back["forwardLean"]
+
+    frame = {
+        "frontKnee": {"angle": float(knee_right), "side": "right"},
+        "backKnee": {"angle": float(knee_left), "side": "left"},
+        "backToHead": {
+            "angle": float(back_to_head_angle),
+            "spineCurvature": float(spine_curvature),
+        },
+        "elbow": {
+            "left": float(elbow_left),
+            "right": float(elbow_right),
+            "symmetry": float(elbow_symmetry),
+        },
+        "knee": {
+            "left": float(knee_left),
+            "right": float(knee_right),
+            "symmetry": float(knee_symmetry),
+        },
+    }
+
+    return web.json_response(frame, headers={"Access-Control-Allow-Origin": "*"})
 
 async def main():
     app = web.Application()
     app.router.add_post('/joint-angles', joint_angles_handler)
+    app.router.add_get('/joint-angles', joint_angles_get_handler)
 
     runner = web.AppRunner(app)
     await runner.setup()

@@ -8,14 +8,14 @@ function JointAngles({ data, realTimeData }) {
   // Prepare chart data
   const chartData = displayData.timeSeriesData?.map((point, index) => ({
     time: `${Math.floor(index / 60)}:${String(index % 60).padStart(2, '0')}`,
-    frontKnee: point.jointAngles.frontKnee?.angle,
-    backKnee: point.jointAngles.backKnee?.angle,
-    elbowLeft: point.jointAngles.elbow?.left,
-    elbowRight: point.jointAngles.elbow?.right,
-    backToHead: point.jointAngles.backToHead?.angle,
+    frontKnee: point.frontKnee?.angle,
+    backKnee: point.backKnee?.angle,
+    elbowLeft: point.elbow?.left,
+    elbowRight: point.elbow?.right,
+    backToHead: point.backToHead?.angle,
   })) || []
 
-  const currentAngles = displayData.jointAngles
+  const currentAngles = displayData.jointAngles || displayData
 
   return (
     <div className="joint-angles">
