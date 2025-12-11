@@ -20,8 +20,6 @@ import { getFeedbackForMetric, getAsymmetryFeedback } from '../utils/feedbackCon
  * 
  * MISSING from backend (will show as 'N/A'):
  * - runDuration: Actual duration of the run (e.g., "25:30")
- * - totalSteps: Total step count
- * 
  * All other metrics are calculated from the joint angles data above.
  */
 function Dashboard({ data, realTimeData, sessionAverages }) {
@@ -51,7 +49,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
   const overallSymmetry = displayData.overallSymmetry
   const asymmetryScore = displayData.asymmetryScore
   const runDuration = displayData.runDuration || 'N/A'
-  const totalSteps = displayData.totalSteps || 'N/A'
   
   // Helper function to convert real-time backend data to dashboard format
   function convertRealTimeDataToDashboardFormat(rtData) {
@@ -114,7 +111,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       overallSymmetry: Math.round(overallSymmetry),
       asymmetryScore: asymmetryScore,
       runDuration: 'N/A', // MISSING: Not provided by backend
-      totalSteps: 'N/A', // MISSING: Not provided by backend
       jointAngles: jointAngles,
       formAnalysis: formAnalysis,
       recommendations: generateRecommendations(jointAngles, overallSymmetry, asymmetryScore)
@@ -133,9 +129,8 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     const elbowDiff = Math.abs(jointAngles.elbow.left - jointAngles.elbow.right)
     const asymmetryScore = (kneeDiff + elbowDiff) / 2
     
-    // Estimate duration and steps from totalFrames (assuming ~30fps)
+    // Estimate duration from totalFrames (assuming ~30fps)
     const estimatedDuration = avgData.totalFrames ? `${Math.floor(avgData.totalFrames / 30 / 60)}:${String(Math.floor((avgData.totalFrames / 30) % 60)).padStart(2, '0')}` : 'N/A'
-    // const estimatedSteps = avgData.totalFrames ? Math.floor(avgData.totalFrames / 30) : 'N/A'
     
     // Convert to formAnalysis format
     const frontKneeAvg = jointAngles.frontKnee.angle
@@ -172,7 +167,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       overallSymmetry: Math.round(overallSymmetry),
       asymmetryScore: asymmetryScore,
       runDuration: estimatedDuration,
-      totalSteps: estimatedSteps,
       jointAngles: jointAngles,
       formAnalysis: formAnalysis,
       recommendations: generateRecommendations(jointAngles, overallSymmetry, asymmetryScore)
@@ -257,7 +251,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
         <h2>Run Analysis Overview</h2>
         <div className="run-info">
           <span>Duration: {runDuration}</span>
-          <span>Steps: {totalSteps}</span>
         </div>
       </div>
 

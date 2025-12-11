@@ -52,7 +52,6 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
 
   const headPosition = {
     tilt: safeNumber(backToHead.tilt ?? backToHead.angle, 0),
-    forwardPosition: safeNumber(backToHead.forwardPosition, 0),
     symmetry: safeNumber(backToHead.symmetry ?? knee.symmetry, 0),
     recommendation: 'Keep head neutral, eyes looking 10–20m ahead.',
   }
