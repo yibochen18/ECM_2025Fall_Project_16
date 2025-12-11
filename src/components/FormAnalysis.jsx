@@ -59,41 +59,20 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
 }
 
 function FormAnalysis({ data, realTimeData, sessionAverages }) {
-  const baseData = realTimeData || data || null
-
+  // FormAnalysis only displays session averages, not live data
+  // This ensures consistent analysis based on the full session
   let formAnalysis = null
 
   if (sessionAverages) {
     formAnalysis = convertSessionAveragesToFormAnalysis(sessionAverages)
-  } else if (baseData && baseData.formAnalysis) {
-    formAnalysis = baseData.formAnalysis
-  } else if (baseData && baseData.jointAngles) {
-    // Shape like { jointAngles: { ... } }
-    formAnalysis = convertSessionAveragesToFormAnalysis({ jointAngles: baseData.jointAngles })
-  } else if (baseData && (baseData.frontKnee || baseData.backKnee || baseData.elbow || baseData.backToHead || baseData.knee)) {
-    // Live frame shape from backend: { frontKnee, backKnee, backToHead, elbow, knee }
-    formAnalysis = convertSessionAveragesToFormAnalysis(baseData)
+  } else if (data && data.formAnalysis) {
+    // Fallback for legacy data format
+    formAnalysis = data.formAnalysis
   }
 
-  const displayData = baseData || (sessionAverages ? { jointAngles: sessionAverages.jointAngles } : null)
+  const displayData = sessionAverages ? { jointAngles: sessionAverages.jointAngles } : null
   
   // Handle no data case
-  if (!displayData && !formAnalysis) {
-    return (
-      <div className="form-analysis">
-        <div className="section-header">
-          <h2>Form Analysis</h2>
-          <p className="section-description">
-            Detailed analysis of running form including posture and body positioning
-          </p>
-        </div>
-        <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          <p>No data available. Start a live session to see form analysis.</p>
-        </div>
-      </div>
-    )
-  }
-  
   if (!formAnalysis) {
     return (
       <div className="form-analysis">
@@ -104,7 +83,10 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
           </p>
         </div>
         <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-secondary)' }}>
-          <p>No form analysis data available. Start a live session to see metrics.</p>
+          <p>Form analysis will be available after your session ends.</p>
+          <p style={{ marginTop: '0.5rem', fontSize: '0.9em', opacity: 0.8 }}>
+            Complete a running session to see detailed form metrics and averages.
+          </p>
         </div>
       </div>
     )
