@@ -126,23 +126,23 @@
 }
 
 .status-badge.excellent {
-  background-color: #4caf50; /* Green for excellent */
+  background-color: var(--secondary-color, #4caf50);
   color: white;
 }
 
 .status-badge.good {
-  background-color: #ff9800; /* Orange for good */
+  background-color: var(--warning-color, #ff9800);
   color: white;
 }
 
 .status-badge.needs-improvement,
 .status-badge.bad {
-  background-color: #f44336; /* Red for needs improvement/bad */
+  background-color: var(--danger-color, #f44336);
   color: white;
 }
 
 .status-badge.warning {
-  background-color: #ff9800; /* Orange for warning */
+  background-color: var(--warning-color, #ff9800);
   color: white;
 }
 

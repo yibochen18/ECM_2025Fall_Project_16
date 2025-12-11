@@ -38,11 +38,9 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   const kneeAnglesAtLanding = {
     frontKnee: {
       angle: safeNumber(frontKnee.angle), // Average front knee angle
-      symmetry: safeNumber(knee.symmetry, 0), // Left/right knee symmetry
     },
     backKnee: {
       angle: safeNumber(backKnee.angle), // Average back knee angle
-      symmetry: safeNumber(knee.symmetry, 0), // Left/right knee symmetry
     },
   }
 
@@ -180,15 +178,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
                 {getAngleStatus('frontKnee', formAnalysis.kneeAnglesAtLanding.frontKnee.angle).label}
               </span>
             </div>
-            <div className="symmetry-indicator">
-              <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.kneeAnglesAtLanding.frontKnee.symmetry}%` }}
-                />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -206,15 +195,6 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
               <span className={`status-badge ${getAngleStatus('backKnee', formAnalysis.kneeAnglesAtLanding.backKnee.angle).class}`}>
                 {getAngleStatus('backKnee', formAnalysis.kneeAnglesAtLanding.backKnee.angle).label}
               </span>
-            </div>
-            <div className="symmetry-indicator">
-              <span>Knee Symmetry: {formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%</span>
-              <div className="symmetry-bar">
-                <div 
-                  className={`symmetry-fill ${getSymmetryClass(formAnalysis.kneeAnglesAtLanding.backKnee.symmetry)}`}
-                  style={{ '--symmetry-width': `${formAnalysis.kneeAnglesAtLanding.backKnee.symmetry}%` }}
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -259,13 +239,11 @@ function FormAnalysis({ data, realTimeData, sessionAverages }) {
         <div className="form-metric-card">
           <h3>Head Position</h3>
           <div className="metric-content">
-            <div className="head-metrics">
-              <div className="head-metric-item">
-                <div className="head-metric-label">Tilt</div>
-                <div className="head-metric-value">
-                  {formAnalysis.headPosition.tilt > 0 ? '+' : ''}{formAnalysis.headPosition.tilt.toFixed(1)}°
-                </div>
+            <div className="position-display">
+              <div className="position-value">
+                {formAnalysis.headPosition.tilt > 0 ? '+' : ''}{formAnalysis.headPosition.tilt.toFixed(1)}°
               </div>
+              <div className="position-label">Tilt</div>
             </div>
             <div className="position-status">
               <span className={`status-badge ${getAngleStatus('backToHead', formAnalysis.headPosition.tilt).class}`}>

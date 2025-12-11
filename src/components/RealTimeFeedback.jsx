@@ -28,6 +28,21 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
     return { type: 'error', icon: '✗', message: 'Needs attention' }
   }
   
+  // Map logical feedback types to visual severity levels used in CSS
+  const mapToVisualType = (type) => {
+    switch (type) {
+      case 'excellent':
+      case 'good':
+        return 'success'
+      case 'needsImprovement':
+        return 'warning'
+      case 'bad':
+        return 'error'
+      default:
+        return 'info'
+    }
+  }
+
   // Generate feedback based on session averages
   const getSessionBasedFeedback = () => {
     if (!sessionAverages) {
@@ -54,7 +69,8 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
         range: (ja.frontKnee.min !== undefined && ja.frontKnee.max !== undefined)
           ? `${ja.frontKnee.min.toFixed(1)}° - ${ja.frontKnee.max.toFixed(1)}°`
           : undefined,
-        ...frontKneeFeedback
+        ...frontKneeFeedback,
+        visualType: mapToVisualType(frontKneeFeedback.type)
       })
     }
     
@@ -67,7 +83,8 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
         range: (ja.backKnee.min !== undefined && ja.backKnee.max !== undefined)
           ? `${ja.backKnee.min.toFixed(1)}° - ${ja.backKnee.max.toFixed(1)}°`
           : undefined,
-        ...backKneeFeedback
+        ...backKneeFeedback,
+        visualType: mapToVisualType(backKneeFeedback.type)
       })
     }
     
@@ -81,7 +98,8 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
         value: `L: ${ja.elbow.left.toFixed(1)}°, R: ${ja.elbow.right.toFixed(1)}°`,
         symmetry: `${ja.elbow.symmetry.toFixed(1)}%`,
         ...elbowFeedback,
-        symmetryFeedback: elbowSymmetryFeedback
+        symmetryFeedback: elbowSymmetryFeedback,
+        visualType: mapToVisualType(elbowFeedback.type)
       })
     }
     
@@ -91,7 +109,8 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
       feedback.push({
         metric: 'Posture (Back to Head)',
         value: `${ja.backToHead.angle.toFixed(1)}°`,
-        ...backToHeadFeedback
+        ...backToHeadFeedback,
+        visualType: mapToVisualType(backToHeadFeedback.type)
       })
     }
     
@@ -101,7 +120,8 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
       feedback.push({
         metric: 'Knee Symmetry',
         value: `${ja.knee.symmetry.toFixed(1)}%`,
-        ...kneeSymmetryFeedback
+        ...kneeSymmetryFeedback,
+        visualType: mapToVisualType(kneeSymmetryFeedback.type)
       })
     }
     
@@ -269,7 +289,7 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
           <h3>Session Analysis & Feedback</h3>
           <div className="feedback-list" ref={feedbackRef}>
             {sessionFeedback.map((item, index) => (
-              <div key={index} className={`feedback-item session-feedback-item ${item.type}`}>
+              <div key={index} className={`session-feedback-item ${item.visualType || item.type}`}>
                 <div className="feedback-header">
                   <div className="feedback-metric-name">
                     <strong>{item.metric}</strong>
@@ -277,8 +297,14 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
                     {item.range && <span className="feedback-range"> Range: {item.range}</span>}
                     {item.symmetry && <span className="feedback-symmetry"> Symmetry: {item.symmetry}</span>}
                   </div>
-                  <div className={`feedback-type-badge ${item.type}`}>
-                    {item.type === 'success' ? '✓' : item.type === 'warning' ? '⚠' : item.type === 'error' ? '✗' : 'ℹ'}
+                  <div className={`feedback-type-badge ${item.visualType || item.type}`}>
+                    {(item.visualType || item.type) === 'success'
+                      ? '✓'
+                      : (item.visualType || item.type) === 'warning'
+                        ? '⚠'
+                        : (item.visualType || item.type) === 'error'
+                          ? '✗'
+                          : 'ℹ'}
                   </div>
                 </div>
                 <div className="feedback-message">{item.message}</div>
