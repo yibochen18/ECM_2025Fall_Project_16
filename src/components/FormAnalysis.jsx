@@ -2,9 +2,7 @@ import React from 'react'
 import './FormAnalysis.css'
 import { getFeedbackForMetric } from '../utils/feedbackConfig'
 
-// Convert session-level averages into the formAnalysis structure
-// expected by the UI below. This keeps the component logic simple
-// and makes it easy to adjust mappings later.
+// Convert session-level averages into the formAnalysis structure expected by the UI below. 
 function convertSessionAveragesToFormAnalysis(sessionAverages) {
   if (!sessionAverages) {
     return null
@@ -29,7 +27,7 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   const leanFeedback = getFeedbackForMetric('lean', lean)
   
   const backPosition = {
-    forwardLean: lean, // Lean angle (spine curvature)
+    forwardLean: lean,
     status: leanFeedback.threshold === 'excellent' ? 'Excellent' :
             leanFeedback.threshold === 'good' ? 'Good' :
             leanFeedback.threshold === 'needsImprovement' ? 'Needs Improvement' : 'Bad',
@@ -39,10 +37,10 @@ function convertSessionAveragesToFormAnalysis(sessionAverages) {
   // Front/back knee angles are averages from the session
   const kneeAnglesAtLanding = {
     frontKnee: {
-      angle: safeNumber(frontKnee.angle), // Average front knee angle
+      angle: safeNumber(frontKnee.angle),
     },
     backKnee: {
-      angle: safeNumber(backKnee.angle), // Average back knee angle
+      angle: safeNumber(backKnee.angle),
     },
   }
 

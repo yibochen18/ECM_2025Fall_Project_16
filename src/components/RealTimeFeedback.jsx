@@ -151,6 +151,7 @@ function RealTimeFeedback({ data, realTimeData, isActive, sessionAverages }) {
 
   const jointFeedback = getJointFeedback()
 
+  // Placeholder live advice for now (currently just used for proof of concept)
   const getActionableFeedback = () => {
     if (!currentData || !currentData.jointAngles) {
       return []

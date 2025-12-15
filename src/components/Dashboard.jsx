@@ -2,26 +2,6 @@ import React from 'react'
 import './Dashboard.css'
 import { getFeedbackForMetric, getAsymmetryFeedback } from '../utils/feedbackConfig'
 
-/**
- * Dashboard Component
- * 
- * Data Sources (in priority order):
- * 1. sessionAverages - Session averages from backend (when session ends)
- * 2. realTimeData - Real-time data from backend (same structure as JointAngles receives)
- * 
- * Backend Data Structure (from http://localhost:4000/joint-angles):
- * {
- *   frontKnee: { angle, ... },
- *   backKnee: { angle, ... },
- *   backToHead: { angle, spineCurvature },
- *   elbow: { left, right, symmetry },
- *   knee: { left, right, symmetry }
- * }
- * 
- * MISSING from backend (will show as 'N/A'):
- * - runDuration: Actual duration of the run (e.g., "25:30")
- * All other metrics are calculated from the joint angles data above.
- */
 function Dashboard({ data, realTimeData, sessionAverages }) {
   // Priority: sessionAverages > realTimeData
   // Use session averages if available, otherwise use real-time backend data
@@ -73,11 +53,11 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     const formAnalysis = {
       backPosition: {
-        forwardLean: jointAngles.backToHead?.spineCurvature || 0, // Use spineCurvature (lean) instead of angle
+        forwardLean: jointAngles.backToHead?.spineCurvature || 0,
         symmetry: 90, // Default, not available from backend
         status: 'N/A' // Status determined by feedbackConfig in render
       },
-      kneeAnglesAtLanding: {
+      kneeAnglesAtLanding: { // Detections for this are currently unreliable so using average front knee angles instead.
         frontKnee: {
           angle: frontKneeAngle // Average front knee angle
         },
@@ -94,7 +74,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     return {
       overallSymmetry: Math.round(overallSymmetry),
-      runDuration: 'N/A', // MISSING: Not provided by backend at the moment
+      runDuration: 'N/A', // MISSING: Not provided by backend at the moment, future work
       jointAngles: jointAngles,
       formAnalysis: formAnalysis,
       recommendations: generateRecommendations(jointAngles, overallSymmetry)
@@ -118,7 +98,7 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     
     const formAnalysis = {
       backPosition: {
-        forwardLean: jointAngles.backToHead.spineCurvature || 0, // Use spineCurvature (lean) instead of angle
+        forwardLean: jointAngles.backToHead.spineCurvature || 0,
         symmetry: 90,
         status: 'N/A' // Status determined by feedbackConfig in render
       },
@@ -162,10 +142,6 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
       recommendations.push('Maintain balanced arm swing for better symmetry')
     }
     
-    if (Math.abs(jointAngles.backToHead.angle) > 10) {
-      recommendations.push('Keep your head aligned with your back for better posture')
-    }
-    
     if (recommendations.length === 0) {
       recommendations.push('Great job maintaining good form! Keep up the excellent work.')
     }
@@ -174,17 +150,16 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
   }
 
   // Get status class from feedbackConfig thresholds
-  // Map feedbackConfig threshold names to CSS classes
   // CSS supports: excellent (green), good (yellow), fair (orange), needs-improvement (red)
   const getStatusClass = (threshold) => {
     if (!threshold) return 'needs-improvement'
     if (threshold === 'excellent') return 'excellent'
     if (threshold === 'good') return 'good'
     if (threshold === 'needsImprovement') return 'needs-improvement'
-    if (threshold === 'bad') return 'needs-improvement' // Bad is red
-    if (threshold === 'tooForward') return 'needs-improvement' // Too forward is red
-    if (threshold === 'tooBackward') return 'needs-improvement' // Too backward is red
-    if (threshold === 'tooMuchFlexion') return 'needs-improvement' // Too much flexion is red
+    if (threshold === 'bad') return 'needs-improvement' 
+    if (threshold === 'tooForward') return 'needs-improvement' 
+    if (threshold === 'tooBackward') return 'needs-improvement' 
+    if (threshold === 'tooMuchFlexion') return 'needs-improvement' 
     return 'needs-improvement'
   }
 
@@ -193,10 +168,11 @@ function Dashboard({ data, realTimeData, sessionAverages }) {
     if (threshold === 'excellent') return 'Excellent'
     if (threshold === 'good') return 'Good'
     if (threshold === 'needsImprovement') return 'Needs Improvement'
-    if (threshold === 'bad') return 'Bad' // Bad has its own label
-    if (threshold === 'tooForward') return 'Too Forward' // Too Forward has its own label
-    if (threshold === 'tooBackward') return 'Too Backward' // Too Backward has its own label
-    if (threshold === 'tooMuchFlexion') return 'Too Much Flexion' // Too Much Flexion has its own label
+    // Below 4 all have their own labels
+    if (threshold === 'bad') return 'Bad' 
+    if (threshold === 'tooForward') return 'Too Forward' 
+    if (threshold === 'tooBackward') return 'Too Backward' 
+    if (threshold === 'tooMuchFlexion') return 'Too Much Flexion' 
     return 'Needs Improvement'
   }
 
