@@ -6,7 +6,7 @@
 Moreover, we provide a framework for running the MobilePoser in real time using free apps for sending your phone's data to your computer.
 
 
-[![Video Title](placeholder.png)](https://youtu.be/MWTbItMX2pw)
+[![Video Title](demo.png)](https://youtu.be/ps6nEUCEM1I)
 <br>
 
 
@@ -42,7 +42,9 @@ We found the following pipeline to be the most effective for running MobilePoser
 2) Go to Settings > Data Streaming > Enter your computer's IP address into HTTP Push's "Push URL" field. You can find your IP address by typing `ifconfig` in the terminal and searching for the line that starts with "inet" and ends with "en0".
 3) Then go to the MobilePoser directory and run the live_demo_http.py script.
 ```
-python mobileposer/live_demo_http.py
+cd ML
+
+python mobileposer.live_demo_http.py
 ```
 
 with options to save using the ```--save``` flag to save your run as a ```.pt``` file.
@@ -50,7 +52,7 @@ with options to save using the ```--save``` flag to save your run as a ```.pt```
 
 *Optional*: To visualize your run, use the ```view_my_results.py``` script.
 ```
-python mobileposer/view_my_results.py --results YOUR_RESULTS_FROM_--save.pt
+python mobileposer.view_my_results.py --results YOUR_RESULTS_FROM_--save.pt
 ```
 
 4) Ensure you see data packets being received in the terminal. If you do not, try check the ip address you entered in SensorLogger and make sure it matches your computer's IP address. 

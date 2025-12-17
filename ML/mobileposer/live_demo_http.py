@@ -19,7 +19,7 @@ from flask import Flask, request, jsonify
 from pygame.time import Clock
 from threading import Lock
 
-from articulate.math import *
+from mobileposer.articulate.math import *
 from mobileposer.config import *
 from mobileposer.models import *
 from mobileposer.utils.model_utils import *
@@ -391,13 +391,13 @@ if __name__ == "__main__":
         average_data['sessionEndTime'] = datetime.now().isoformat()
         
         # Save to JSON file
-        output_file = f"data/avgs/live_session_averages_{int(time.time())}.json"
+        output_file = f"mobileposer/data/avgs/live_session_averages_{int(time.time())}.json"
         with open(output_file, 'w') as f:
             json.dump(average_data, f, indent=2)
         print(f"✓ Average joint angles saved to {output_file}")
         
         # Also save to a fixed filename for easy frontend access
-        fixed_output_file = "data/avgs/latest_session_averages.json"
+        fixed_output_file = "mobileposer/data/avgs/latest_session_averages.json"
         with open(fixed_output_file, 'w') as f:
             json.dump(average_data, f, indent=2)
         print(f"✓ Also saved to {fixed_output_file} for frontend access")

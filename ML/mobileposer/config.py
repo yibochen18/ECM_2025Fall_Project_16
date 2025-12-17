@@ -28,7 +28,7 @@ class paths:
     root_dir = Path(__file__).parent.parent.absolute()
     checkpoint = root_dir / "checkpoints"
     smpl_file = root_dir / "mobileposer/smpl/basicmodel_m.pkl"
-    weights_file = root_dir / "checkpoints/weights.pth"
+    weights_file = root_dir / "mobileposer/checkpoints/weights.pth"
     dev_data = root_dir / "data/dev_data"
     eval_dir = root_dir / "data/processed_datasets/eval"
     processed_datasets = root_dir / "data/processed_datasets"
