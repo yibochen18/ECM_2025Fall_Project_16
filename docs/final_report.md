@@ -40,7 +40,7 @@ signals into fine-tuned models such as DIP and MobilePoser to reconstruct full 3
 extracts key kinematic metrics like hip, knee, ankle, and elbow angles, enabling coach-level running analysis without any video capture or
 marker-based setups. This makes high-quality running-form analysis accessible in everyday settings using devices people already own.
 
-### **2.5 Challenges**
+### **2.4 Challenges**
 
 SymStride faces several challenges in converting sparse IMU data from consumer devices into accurate 3D running kinematics. A primary concern
 is **accuracy and consistency**: the models must produce joint angles comparable to vision-based systems while handling variability across
@@ -54,7 +54,7 @@ calculations for advanced kinematic metrics, including symmetry and running-form
 like reconstructing a full 3D landscape from scattered, noisy compass and accelerometer readings: portable and private, but requiring
 sophisticated algorithms to produce precise and reliable insights.
 
-### **2.6 Required Skills & Resources**
+### **2.5 Required Skills & Resources**
 
 Successfully completing this project requires a combination of skills and hardware resources:
 
@@ -83,7 +83,7 @@ Successfully completing this project requires a combination of skills and hardwa
 - **iPhone, Apple Watch, AirPod**: A full Apple ecosystem and leveraging
   SensorLogger to transmit the data available across all devices.
 
-### **2.7 Success Metrics**
+### **2.6 Success Metrics**
 
 The success of the SymStride project is measured by its ability to
 derive running kinematic metrics and higher-level insights comparable to
@@ -485,6 +485,10 @@ At the same time, the evaluation highlights key limitations of current IMU-based
 
 Overall, SymStride establishes a strong foundation for accessible, low-cost, and privacy-preserving running analysis using devices users already own. With targeted fine-tuning on running-specific data, improved temporal smoothing, and more robust stride-phase detection, IMU-only systems like SymStride have the potential to close the remaining gap with vision-based approaches and enable scalable, real-world biomechanics analysis beyond the lab.
 
+### **6.3 Demo**
+<div align="center">
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ps6nEUCEM1I?si=aOVZVJIjlMzR5jts" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
 
 ## **7. References**
 
